@@ -2,7 +2,6 @@ package yaml
 
 import (
 	"context"
-	"maps"
 )
 
 type (
@@ -11,29 +10,15 @@ type (
 )
 
 func withMerge(ctx context.Context) context.Context {
-	return context.WithValue(ctx, ctxMergeKey{}, true)
+	_ = "STUB: not implemented"
+	return *new(context.Context)
 }
 
-func isMerge(ctx context.Context) bool {
-	v, ok := ctx.Value(ctxMergeKey{}).(bool)
-	if !ok {
-		return false
-	}
-	return v
-}
+func isMerge(ctx context.Context) bool { _ = "STUB: not implemented"; return false }
 
 func withAnchor(ctx context.Context, name string) context.Context {
-	anchorMap := getAnchorMap(ctx)
-	newMap := make(map[string]struct{}, len(anchorMap)+1)
-	maps.Copy(newMap, anchorMap)
-	newMap[name] = struct{}{}
-	return context.WithValue(ctx, ctxAnchorKey{}, newMap)
+	_ = "STUB: not implemented"
+	return *new(context.Context)
 }
 
-func getAnchorMap(ctx context.Context) map[string]struct{} {
-	v, ok := ctx.Value(ctxAnchorKey{}).(map[string]struct{})
-	if !ok {
-		return nil
-	}
-	return v
-}
+func getAnchorMap(ctx context.Context) map[string]struct{} { _ = "STUB: not implemented"; return nil }

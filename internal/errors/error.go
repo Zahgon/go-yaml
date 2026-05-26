@@ -2,11 +2,9 @@ package errors
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/goccy/go-yaml/ast"
-	"github.com/goccy/go-yaml/printer"
 	"github.com/goccy/go-yaml/token"
 )
 
@@ -72,175 +70,110 @@ type UnexpectedNodeTypeError struct {
 }
 
 // ErrSyntax create syntax error instance with message and token
-func ErrSyntax(msg string, tk *token.Token) *SyntaxError {
-	return &SyntaxError{
-		Message: msg,
-		Token:   tk,
-	}
-}
+func ErrSyntax(msg string, tk *token.Token) *SyntaxError { _ = "STUB: not implemented"; return nil }
 
 // ErrOverflow creates an overflow error instance with message and a token.
 func ErrOverflow(dstType reflect.Type, num string, tk *token.Token) *OverflowError {
-	return &OverflowError{
-		DstType: dstType,
-		SrcNum:  num,
-		Token:   tk,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // ErrTypeMismatch cerates an type mismatch error instance with token.
 func ErrTypeMismatch(dstType, srcType reflect.Type, token *token.Token) *TypeError {
-	return &TypeError{
-		DstType: dstType,
-		SrcType: srcType,
-		Token:   token,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // ErrDuplicateKey creates an duplicate key error instance with token.
 func ErrDuplicateKey(msg string, tk *token.Token) *DuplicateKeyError {
-	return &DuplicateKeyError{
-		Message: msg,
-		Token:   tk,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // ErrUnknownField creates an unknown field error instance with token.
 func ErrUnknownField(msg string, tk *token.Token) *UnknownFieldError {
-	return &UnknownFieldError{
-		Message: msg,
-		Token:   tk,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func ErrUnexpectedNodeType(actual, expected ast.NodeType, tk *token.Token) *UnexpectedNodeTypeError {
-	return &UnexpectedNodeTypeError{
-		Actual:   actual,
-		Expected: expected,
-		Token:    tk,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
-func (e *SyntaxError) GetMessage() string {
-	return e.Message
-}
+func (e *SyntaxError) GetMessage() string { _ = "STUB: not implemented"; return "" }
 
-func (e *SyntaxError) GetToken() *token.Token {
-	return e.Token
-}
+func (e *SyntaxError) GetToken() *token.Token { _ = "STUB: not implemented"; return nil }
 
-func (e *SyntaxError) Error() string {
-	return e.FormatError(defaultFormatColor, defaultIncludeSource)
-}
+func (e *SyntaxError) Error() string { _ = "STUB: not implemented"; return "" }
 
 func (e *SyntaxError) FormatError(colored, inclSource bool) string {
-	return FormatError(e.Message, e.Token, colored, inclSource)
+	_ = "STUB: not implemented"
+	return ""
 }
 
-func (e *OverflowError) GetMessage() string {
-	return e.msg()
-}
+func (e *OverflowError) GetMessage() string { _ = "STUB: not implemented"; return "" }
 
-func (e *OverflowError) GetToken() *token.Token {
-	return e.Token
-}
+func (e *OverflowError) GetToken() *token.Token { _ = "STUB: not implemented"; return nil }
 
-func (e *OverflowError) Error() string {
-	return e.FormatError(defaultFormatColor, defaultIncludeSource)
-}
+func (e *OverflowError) Error() string { _ = "STUB: not implemented"; return "" }
 
 func (e *OverflowError) FormatError(colored, inclSource bool) string {
-	return FormatError(e.msg(), e.Token, colored, inclSource)
+	_ = "STUB: not implemented"
+	return ""
 }
 
-func (e *OverflowError) msg() string {
-	return fmt.Sprintf("cannot unmarshal %s into Go value of type %s ( overflow )", e.SrcNum, e.DstType)
-}
+func (e *OverflowError) msg() string { _ = "STUB: not implemented"; return "" }
 
-func (e *TypeError) msg() string {
-	if e.StructFieldName != nil {
-		return fmt.Sprintf("cannot unmarshal %s into Go struct field %s of type %s", e.SrcType, *e.StructFieldName, e.DstType)
-	}
-	return fmt.Sprintf("cannot unmarshal %s into Go value of type %s", e.SrcType, e.DstType)
-}
+func (e *TypeError) msg() string { _ = "STUB: not implemented"; return "" }
 
-func (e *TypeError) GetMessage() string {
-	return e.msg()
-}
+func (e *TypeError) GetMessage() string { _ = "STUB: not implemented"; return "" }
 
-func (e *TypeError) GetToken() *token.Token {
-	return e.Token
-}
+func (e *TypeError) GetToken() *token.Token { _ = "STUB: not implemented"; return nil }
 
-func (e *TypeError) Error() string {
-	return e.FormatError(defaultFormatColor, defaultIncludeSource)
-}
+func (e *TypeError) Error() string { _ = "STUB: not implemented"; return "" }
 
 func (e *TypeError) FormatError(colored, inclSource bool) string {
-	return FormatError(e.msg(), e.Token, colored, inclSource)
+	_ = "STUB: not implemented"
+	return ""
 }
 
-func (e *DuplicateKeyError) GetMessage() string {
-	return e.Message
-}
+func (e *DuplicateKeyError) GetMessage() string { _ = "STUB: not implemented"; return "" }
 
-func (e *DuplicateKeyError) GetToken() *token.Token {
-	return e.Token
-}
+func (e *DuplicateKeyError) GetToken() *token.Token { _ = "STUB: not implemented"; return nil }
 
-func (e *DuplicateKeyError) Error() string {
-	return e.FormatError(defaultFormatColor, defaultIncludeSource)
-}
+func (e *DuplicateKeyError) Error() string { _ = "STUB: not implemented"; return "" }
 
 func (e *DuplicateKeyError) FormatError(colored, inclSource bool) string {
-	return FormatError(e.Message, e.Token, colored, inclSource)
+	_ = "STUB: not implemented"
+	return ""
 }
 
-func (e *UnknownFieldError) GetMessage() string {
-	return e.Message
-}
+func (e *UnknownFieldError) GetMessage() string { _ = "STUB: not implemented"; return "" }
 
-func (e *UnknownFieldError) GetToken() *token.Token {
-	return e.Token
-}
+func (e *UnknownFieldError) GetToken() *token.Token { _ = "STUB: not implemented"; return nil }
 
-func (e *UnknownFieldError) Error() string {
-	return e.FormatError(defaultFormatColor, defaultIncludeSource)
-}
+func (e *UnknownFieldError) Error() string { _ = "STUB: not implemented"; return "" }
 
 func (e *UnknownFieldError) FormatError(colored, inclSource bool) string {
-	return FormatError(e.Message, e.Token, colored, inclSource)
+	_ = "STUB: not implemented"
+	return ""
 }
 
-func (e *UnexpectedNodeTypeError) GetMessage() string {
-	return e.msg()
-}
+func (e *UnexpectedNodeTypeError) GetMessage() string { _ = "STUB: not implemented"; return "" }
 
-func (e *UnexpectedNodeTypeError) GetToken() *token.Token {
-	return e.Token
-}
+func (e *UnexpectedNodeTypeError) GetToken() *token.Token { _ = "STUB: not implemented"; return nil }
 
-func (e *UnexpectedNodeTypeError) Error() string {
-	return e.FormatError(defaultFormatColor, defaultIncludeSource)
-}
+func (e *UnexpectedNodeTypeError) Error() string { _ = "STUB: not implemented"; return "" }
 
 func (e *UnexpectedNodeTypeError) FormatError(colored, inclSource bool) string {
-	return FormatError(e.msg(), e.Token, colored, inclSource)
+	_ = "STUB: not implemented"
+	return ""
 }
 
-func (e *UnexpectedNodeTypeError) msg() string {
-	return fmt.Sprintf("%s was used where %s is expected", e.Actual.YAMLName(), e.Expected.YAMLName())
-}
+func (e *UnexpectedNodeTypeError) msg() string { _ = "STUB: not implemented"; return "" }
 
 func FormatError(errMsg string, token *token.Token, colored, inclSource bool) string {
-	var pp printer.Printer
-	if token == nil {
-		return pp.PrintErrorMessage(errMsg, colored)
-	}
-	pos := fmt.Sprintf("[%d:%d] ", token.Position.Line, token.Position.Column)
-	msg := pp.PrintErrorMessage(fmt.Sprintf("%s%s", pos, errMsg), colored)
-	if inclSource {
-		msg += "\n" + pp.PrintErrorToken(token, colored)
-	}
-	return msg
+	_ = "STUB: not implemented"
+	return ""
 }

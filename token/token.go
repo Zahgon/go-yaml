@@ -1,10 +1,6 @@
 package token
 
 import (
-	"errors"
-	"fmt"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -129,79 +125,7 @@ const (
 )
 
 // String type identifier to text
-func (t Type) String() string {
-	switch t {
-	case UnknownType:
-		return "Unknown"
-	case DocumentHeaderType:
-		return "DocumentHeader"
-	case DocumentEndType:
-		return "DocumentEnd"
-	case SequenceEntryType:
-		return "SequenceEntry"
-	case MappingKeyType:
-		return "MappingKey"
-	case MappingValueType:
-		return "MappingValue"
-	case MergeKeyType:
-		return "MergeKey"
-	case CollectEntryType:
-		return "CollectEntry"
-	case SequenceStartType:
-		return "SequenceStart"
-	case SequenceEndType:
-		return "SequenceEnd"
-	case MappingStartType:
-		return "MappingStart"
-	case MappingEndType:
-		return "MappingEnd"
-	case CommentType:
-		return "Comment"
-	case AnchorType:
-		return "Anchor"
-	case AliasType:
-		return "Alias"
-	case TagType:
-		return "Tag"
-	case LiteralType:
-		return "Literal"
-	case FoldedType:
-		return "Folded"
-	case SingleQuoteType:
-		return "SingleQuote"
-	case DoubleQuoteType:
-		return "DoubleQuote"
-	case DirectiveType:
-		return "Directive"
-	case SpaceType:
-		return "Space"
-	case StringType:
-		return "String"
-	case BoolType:
-		return "Bool"
-	case IntegerType:
-		return "Integer"
-	case BinaryIntegerType:
-		return "BinaryInteger"
-	case OctetIntegerType:
-		return "OctetInteger"
-	case HexIntegerType:
-		return "HexInteger"
-	case FloatType:
-		return "Float"
-	case NullType:
-		return "Null"
-	case ImplicitNullType:
-		return "ImplicitNull"
-	case InfinityType:
-		return "Infinity"
-	case NanType:
-		return "Nan"
-	case InvalidType:
-		return "Invalid"
-	}
-	return ""
-}
+func (t Type) String() string { _ = "STUB: not implemented"; return "" }
 
 // CharacterType type for character category
 type CharacterType int
@@ -220,19 +144,7 @@ const (
 )
 
 // String character type identifier to text
-func (c CharacterType) String() string {
-	switch c {
-	case CharacterTypeIndicator:
-		return "Indicator"
-	case CharacterTypeWhiteSpace:
-		return "WhiteSpace"
-	case CharacterTypeMiscellaneous:
-		return "Miscellaneous"
-	case CharacterTypeEscaped:
-		return "Escaped"
-	}
-	return ""
-}
+func (c CharacterType) String() string { _ = "STUB: not implemented"; return "" }
 
 // Indicator type for indicator
 type Indicator int
@@ -259,29 +171,7 @@ const (
 )
 
 // String indicator to text
-func (i Indicator) String() string {
-	switch i {
-	case NotIndicator:
-		return "NotIndicator"
-	case BlockStructureIndicator:
-		return "BlockStructure"
-	case FlowCollectionIndicator:
-		return "FlowCollection"
-	case CommentIndicator:
-		return "Comment"
-	case NodePropertyIndicator:
-		return "NodeProperty"
-	case BlockScalarIndicator:
-		return "BlockScalar"
-	case QuotedScalarIndicator:
-		return "QuotedScalar"
-	case DirectiveIndicator:
-		return "Directive"
-	case InvalidUseOfReservedIndicator:
-		return "InvalidUseOfReserved"
-	}
-	return ""
-}
+func (i Indicator) String() string { _ = "STUB: not implemented"; return "" }
 
 var (
 	reservedNullKeywords = []string{
@@ -342,14 +232,8 @@ var (
 )
 
 func reservedKeywordToken(typ Type, value, org string, pos *Position) *Token {
-	return &Token{
-		Type:          typ,
-		CharacterType: CharacterTypeMiscellaneous,
-		Indicator:     NotIndicator,
-		Value:         value,
-		Origin:        org,
-		Position:      pos,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func init() {
@@ -557,100 +441,11 @@ type NumberValue struct {
 	Text  string
 }
 
-func ToNumber(value string) *NumberValue {
-	num, err := toNumber(value)
-	if err != nil {
-		return nil
-	}
-	return num
-}
+func ToNumber(value string) *NumberValue { _ = "STUB: not implemented"; return nil }
 
-func isNumber(value string) bool {
-	num, err := toNumber(value)
-	if err != nil {
-		var numErr *strconv.NumError
-		if errors.As(err, &numErr) && errors.Is(numErr.Err, strconv.ErrRange) {
-			return true
-		}
-		return false
-	}
-	return num != nil
-}
+func isNumber(value string) bool { _ = "STUB: not implemented"; return false }
 
-func toNumber(value string) (*NumberValue, error) {
-	if len(value) == 0 {
-		return nil, nil
-	}
-	if strings.HasPrefix(value, "_") {
-		return nil, nil
-	}
-	dotCount := strings.Count(value, ".")
-	if dotCount > 1 {
-		return nil, nil
-	}
-
-	isNegative := strings.HasPrefix(value, "-")
-	normalized := strings.ReplaceAll(strings.TrimPrefix(strings.TrimPrefix(value, "+"), "-"), "_", "")
-
-	var (
-		typ  NumberType
-		base int
-	)
-	switch {
-	case strings.HasPrefix(normalized, "0x"):
-		normalized = strings.TrimPrefix(normalized, "0x")
-		base = 16
-		typ = NumberTypeHex
-	case strings.HasPrefix(normalized, "0o"):
-		normalized = strings.TrimPrefix(normalized, "0o")
-		base = 8
-		typ = NumberTypeOctet
-	case strings.HasPrefix(normalized, "0b"):
-		normalized = strings.TrimPrefix(normalized, "0b")
-		base = 2
-		typ = NumberTypeBinary
-	case strings.HasPrefix(normalized, "0") && len(normalized) > 1 && dotCount == 0:
-		base = 8
-		typ = NumberTypeOctet
-	case dotCount == 1:
-		typ = NumberTypeFloat
-	default:
-		typ = NumberTypeDecimal
-		base = 10
-	}
-
-	text := normalized
-	if isNegative {
-		text = "-" + text
-	}
-
-	var v any
-	if typ == NumberTypeFloat {
-		f, err := strconv.ParseFloat(text, 64)
-		if err != nil {
-			return nil, err
-		}
-		v = f
-	} else if isNegative {
-		i, err := strconv.ParseInt(text, base, 64)
-		if err != nil {
-			return nil, err
-		}
-		v = i
-	} else {
-		u, err := strconv.ParseUint(text, base, 64)
-		if err != nil {
-			return nil, err
-		}
-		v = u
-	}
-
-	return &NumberValue{
-		Type:  typ,
-		Value: v,
-		Text:  text,
-	}, nil
-}
+func toNumber(value string) (*NumberValue, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // This is a subset of the formats permitted by the regular expression
 // defined at http://yaml.org/type/timestamp.html. Note that time.Parse
@@ -665,100 +460,16 @@ var timestampFormats = []string{
 	"15:4",
 }
 
-func isTimestamp(value string) bool {
-	for _, format := range timestampFormats {
-		if _, err := time.Parse(format, value); err == nil {
-			return true
-		}
-	}
-	return false
-}
+func isTimestamp(value string) bool { _ = "STUB: not implemented"; return false }
 
 // IsNeedQuoted checks whether the value needs quote for passed string or not
-func IsNeedQuoted(value string) bool {
-	if value == "" {
-		return true
-	}
-	if _, exists := reservedEncKeywordMap[value]; exists {
-		return true
-	}
-	if isNumber(value) {
-		return true
-	}
-	if value == "-" {
-		return true
-	}
-	first := value[0]
-	switch first {
-	case '*', '&', '[', '{', '}', ']', ',', '!', '|', '>', '%', '\'', '"', '@', ' ', '`', ':':
-		return true
-	}
-	last := value[len(value)-1]
-	switch last {
-	case ':', ' ':
-		return true
-	}
-	if isTimestamp(value) {
-		return true
-	}
-	for i, c := range value {
-		switch c {
-		case '#', '\\':
-			return true
-		case ':', '-':
-			if i+1 < len(value) && value[i+1] == ' ' {
-				return true
-			}
-		}
-	}
-	return false
-}
+func IsNeedQuoted(value string) bool { _ = "STUB: not implemented"; return false }
 
 // LiteralBlockHeader detect literal block scalar header
-func LiteralBlockHeader(value string) string {
-	lbc := DetectLineBreakCharacter(value)
-
-	switch {
-	case !strings.Contains(value, lbc):
-		return ""
-	case strings.HasSuffix(value, fmt.Sprintf("%s%s", lbc, lbc)):
-		return "|+"
-	case strings.HasSuffix(value, lbc):
-		return "|"
-	default:
-		return "|-"
-	}
-}
+func LiteralBlockHeader(value string) string { _ = "STUB: not implemented"; return "" }
 
 // New create reserved keyword token or number token and other string token.
-func New(value string, org string, pos *Position) *Token {
-	fn := reservedKeywordMap[value]
-	if fn != nil {
-		return fn(value, org, pos)
-	}
-	if num := ToNumber(value); num != nil {
-		tk := &Token{
-			Type:          IntegerType,
-			CharacterType: CharacterTypeMiscellaneous,
-			Indicator:     NotIndicator,
-			Value:         value,
-			Origin:        org,
-			Position:      pos,
-		}
-		switch num.Type {
-		case NumberTypeFloat:
-			tk.Type = FloatType
-		case NumberTypeBinary:
-			tk.Type = BinaryIntegerType
-		case NumberTypeOctet:
-			tk.Type = OctetIntegerType
-		case NumberTypeHex:
-			tk.Type = HexIntegerType
-		}
-		return tk
-	}
-	return String(value, org, pos)
-}
+func New(value string, org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // Position type for position in YAML document
 type Position struct {
@@ -770,9 +481,7 @@ type Position struct {
 }
 
 // String position to text
-func (p *Position) String() string {
-	return fmt.Sprintf("[level:%d,line:%d,column:%d,offset:%d]", p.IndentLevel, p.Line, p.Column, p.Offset)
-}
+func (p *Position) String() string { _ = "STUB: not implemented"; return "" }
 
 // Token type for token
 type Token struct {
@@ -797,381 +506,106 @@ type Token struct {
 }
 
 // PreviousType previous token type
-func (t *Token) PreviousType() Type {
-	if t.Prev != nil {
-		return t.Prev.Type
-	}
-	return UnknownType
-}
+func (t *Token) PreviousType() Type { _ = "STUB: not implemented"; return *new(Type) }
 
 // NextType next token type
-func (t *Token) NextType() Type {
-	if t.Next != nil {
-		return t.Next.Type
-	}
-	return UnknownType
-}
+func (t *Token) NextType() Type { _ = "STUB: not implemented"; return *new(Type) }
 
 // AddColumn append column number to current position of column
-func (t *Token) AddColumn(col int) {
-	if t == nil {
-		return
-	}
-	t.Position.Column += col
-}
+func (t *Token) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // Clone copy token ( preserve Prev/Next reference )
-func (t *Token) Clone() *Token {
-	if t == nil {
-		return nil
-	}
-	copied := *t
-	if t.Position != nil {
-		pos := *(t.Position)
-		copied.Position = &pos
-	}
-	return &copied
-}
+func (t *Token) Clone() *Token { _ = "STUB: not implemented"; return nil }
 
 // Dump outputs token information to stdout for debugging.
-func (t *Token) Dump() {
-	fmt.Printf(
-		"[TYPE]:%q [CHARTYPE]:%q [INDICATOR]:%q [VALUE]:%q [ORG]:%q [POS(line:column:level:offset)]: %d:%d:%d:%d\n",
-		t.Type, t.CharacterType, t.Indicator, t.Value, t.Origin, t.Position.Line, t.Position.Column, t.Position.IndentLevel, t.Position.Offset,
-	)
-}
+func (t *Token) Dump() { _ = "STUB: not implemented"; return }
 
 // Tokens type of token collection
 type Tokens []*Token
 
-func (t Tokens) InvalidToken() *Token {
-	for _, tt := range t {
-		if tt.Type == InvalidType {
-			return tt
-		}
-	}
-	return nil
-}
+func (t Tokens) InvalidToken() *Token { _ = "STUB: not implemented"; return nil }
 
-func (t *Tokens) add(tk *Token) {
-	tokens := *t
-	if len(tokens) == 0 {
-		tokens = append(tokens, tk)
-	} else {
-		last := tokens[len(tokens)-1]
-		last.Next = tk
-		tk.Prev = last
-		tokens = append(tokens, tk)
-	}
-	*t = tokens
-}
+func (t *Tokens) add(tk *Token) { _ = "STUB: not implemented"; return }
 
 // Add append new some tokens
-func (t *Tokens) Add(tks ...*Token) {
-	for _, tk := range tks {
-		t.add(tk)
-	}
-}
+func (t *Tokens) Add(tks ...*Token) { _ = "STUB: not implemented"; return }
 
 // Dump dump all token structures for debugging
-func (t Tokens) Dump() {
-	for _, tk := range t {
-		fmt.Print("- ")
-		tk.Dump()
-	}
-}
+func (t Tokens) Dump() { _ = "STUB: not implemented"; return }
 
 // String create token for String
-func String(value string, org string, pos *Position) *Token {
-	return &Token{
-		Type:          StringType,
-		CharacterType: CharacterTypeMiscellaneous,
-		Indicator:     NotIndicator,
-		Value:         value,
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func String(value string, org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // SequenceEntry create token for SequenceEntry
-func SequenceEntry(org string, pos *Position) *Token {
-	return &Token{
-		Type:          SequenceEntryType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     BlockStructureIndicator,
-		Value:         string(SequenceEntryCharacter),
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func SequenceEntry(org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // MappingKey create token for MappingKey
-func MappingKey(pos *Position) *Token {
-	return &Token{
-		Type:          MappingKeyType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     BlockStructureIndicator,
-		Value:         string(MappingKeyCharacter),
-		Origin:        string(MappingKeyCharacter),
-		Position:      pos,
-	}
-}
+func MappingKey(pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // MappingValue create token for MappingValue
-func MappingValue(pos *Position) *Token {
-	return &Token{
-		Type:          MappingValueType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     BlockStructureIndicator,
-		Value:         string(MappingValueCharacter),
-		Origin:        string(MappingValueCharacter),
-		Position:      pos,
-	}
-}
+func MappingValue(pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // CollectEntry create token for CollectEntry
-func CollectEntry(org string, pos *Position) *Token {
-	return &Token{
-		Type:          CollectEntryType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     FlowCollectionIndicator,
-		Value:         string(CollectEntryCharacter),
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func CollectEntry(org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // SequenceStart create token for SequenceStart
-func SequenceStart(org string, pos *Position) *Token {
-	return &Token{
-		Type:          SequenceStartType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     FlowCollectionIndicator,
-		Value:         string(SequenceStartCharacter),
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func SequenceStart(org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // SequenceEnd create token for SequenceEnd
-func SequenceEnd(org string, pos *Position) *Token {
-	return &Token{
-		Type:          SequenceEndType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     FlowCollectionIndicator,
-		Value:         string(SequenceEndCharacter),
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func SequenceEnd(org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // MappingStart create token for MappingStart
-func MappingStart(org string, pos *Position) *Token {
-	return &Token{
-		Type:          MappingStartType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     FlowCollectionIndicator,
-		Value:         string(MappingStartCharacter),
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func MappingStart(org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // MappingEnd create token for MappingEnd
-func MappingEnd(org string, pos *Position) *Token {
-	return &Token{
-		Type:          MappingEndType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     FlowCollectionIndicator,
-		Value:         string(MappingEndCharacter),
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func MappingEnd(org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // Comment create token for Comment
-func Comment(value string, org string, pos *Position) *Token {
-	return &Token{
-		Type:          CommentType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     CommentIndicator,
-		Value:         value,
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func Comment(value string, org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // Anchor create token for Anchor
-func Anchor(org string, pos *Position) *Token {
-	return &Token{
-		Type:          AnchorType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     NodePropertyIndicator,
-		Value:         string(AnchorCharacter),
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func Anchor(org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // Alias create token for Alias
-func Alias(org string, pos *Position) *Token {
-	return &Token{
-		Type:          AliasType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     NodePropertyIndicator,
-		Value:         string(AliasCharacter),
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func Alias(org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // Tag create token for Tag
-func Tag(value string, org string, pos *Position) *Token {
-	fn := ReservedTagKeywordMap[ReservedTagKeyword(value)]
-	if fn != nil {
-		return fn(value, org, pos)
-	}
-	return &Token{
-		Type:          TagType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     NodePropertyIndicator,
-		Value:         value,
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func Tag(value string, org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // Literal create token for Literal
-func Literal(value string, org string, pos *Position) *Token {
-	return &Token{
-		Type:          LiteralType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     BlockScalarIndicator,
-		Value:         value,
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func Literal(value string, org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // Folded create token for Folded
-func Folded(value string, org string, pos *Position) *Token {
-	return &Token{
-		Type:          FoldedType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     BlockScalarIndicator,
-		Value:         value,
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func Folded(value string, org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // SingleQuote create token for SingleQuote
 func SingleQuote(value string, org string, pos *Position) *Token {
-	return &Token{
-		Type:          SingleQuoteType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     QuotedScalarIndicator,
-		Value:         value,
-		Origin:        org,
-		Position:      pos,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // DoubleQuote create token for DoubleQuote
 func DoubleQuote(value string, org string, pos *Position) *Token {
-	return &Token{
-		Type:          DoubleQuoteType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     QuotedScalarIndicator,
-		Value:         value,
-		Origin:        org,
-		Position:      pos,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Directive create token for Directive
-func Directive(org string, pos *Position) *Token {
-	return &Token{
-		Type:          DirectiveType,
-		CharacterType: CharacterTypeIndicator,
-		Indicator:     DirectiveIndicator,
-		Value:         string(DirectiveCharacter),
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func Directive(org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // Space create token for Space
-func Space(pos *Position) *Token {
-	return &Token{
-		Type:          SpaceType,
-		CharacterType: CharacterTypeWhiteSpace,
-		Indicator:     NotIndicator,
-		Value:         string(SpaceCharacter),
-		Origin:        string(SpaceCharacter),
-		Position:      pos,
-	}
-}
+func Space(pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // MergeKey create token for MergeKey
-func MergeKey(org string, pos *Position) *Token {
-	return &Token{
-		Type:          MergeKeyType,
-		CharacterType: CharacterTypeMiscellaneous,
-		Indicator:     NotIndicator,
-		Value:         "<<",
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func MergeKey(org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // DocumentHeader create token for DocumentHeader
-func DocumentHeader(org string, pos *Position) *Token {
-	return &Token{
-		Type:          DocumentHeaderType,
-		CharacterType: CharacterTypeMiscellaneous,
-		Indicator:     NotIndicator,
-		Value:         "---",
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func DocumentHeader(org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // DocumentEnd create token for DocumentEnd
-func DocumentEnd(org string, pos *Position) *Token {
-	return &Token{
-		Type:          DocumentEndType,
-		CharacterType: CharacterTypeMiscellaneous,
-		Indicator:     NotIndicator,
-		Value:         "...",
-		Origin:        org,
-		Position:      pos,
-	}
-}
+func DocumentEnd(org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
-func Invalid(err string, org string, pos *Position) *Token {
-	return &Token{
-		Type:          InvalidType,
-		CharacterType: CharacterTypeInvalid,
-		Indicator:     NotIndicator,
-		Value:         org,
-		Origin:        org,
-		Error:         err,
-		Position:      pos,
-	}
-}
+func Invalid(err string, org string, pos *Position) *Token { _ = "STUB: not implemented"; return nil }
 
 // DetectLineBreakCharacter detect line break character in only one inside scalar content scope.
-func DetectLineBreakCharacter(src string) string {
-	nc := strings.Count(src, "\n")
-	rc := strings.Count(src, "\r")
-	rnc := strings.Count(src, "\r\n")
-	switch {
-	case nc == rnc && rc == rnc:
-		return "\r\n"
-	case rc > nc:
-		return "\r"
-	default:
-		return "\n"
-	}
-}
+func DetectLineBreakCharacter(src string) string { _ = "STUB: not implemented"; return "" }

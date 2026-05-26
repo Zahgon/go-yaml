@@ -1,14 +1,11 @@
 package yaml
 
 import (
-	"bytes"
 	"context"
-	"io"
 	"reflect"
 	"sync"
 
 	"github.com/goccy/go-yaml/ast"
-	"github.com/goccy/go-yaml/internal/errors"
 )
 
 // BytesMarshaler interface may be implemented by types to customize their
@@ -77,13 +74,7 @@ type MapItem struct {
 type MapSlice []MapItem
 
 // ToMap convert to map[interface{}]interface{}.
-func (s MapSlice) ToMap() map[interface{}]interface{} {
-	v := map[interface{}]interface{}{}
-	for _, item := range s {
-		v[item.Key] = item.Value
-	}
-	return v
-}
+func (s MapSlice) ToMap() map[interface{}]interface{} { _ = "STUB: not implemented"; return nil }
 
 // Marshal serializes the value provided into a YAML document. The structure
 // of the generated document will reflect the structure of the value itself.
@@ -142,31 +133,28 @@ func (s MapSlice) ToMap() map[interface{}]interface{} {
 //	yaml.Marshal(&T{B: 2}) // Returns "b: 2\n"
 //	yaml.Marshal(&T{F: 1}) // Returns "a: 1\nb: 0\n"
 func Marshal(v interface{}) ([]byte, error) {
-	return MarshalWithOptions(v)
+	_ = "STUB: not implemented"
+	return nil,
+
+		// MarshalWithOptions serializes the value provided into a YAML document with EncodeOptions.
+		nil
 }
 
-// MarshalWithOptions serializes the value provided into a YAML document with EncodeOptions.
 func MarshalWithOptions(v interface{}, opts ...EncodeOption) ([]byte, error) {
-	return MarshalContext(context.Background(), v, opts...)
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 // MarshalContext serializes the value provided into a YAML document with context.Context and EncodeOptions.
 func MarshalContext(ctx context.Context, v interface{}, opts ...EncodeOption) ([]byte, error) {
-	var buf bytes.Buffer
-	if err := NewEncoder(&buf, opts...).EncodeContext(ctx, v); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 // ValueToNode convert from value to ast.Node.
 func ValueToNode(v interface{}, opts ...EncodeOption) (ast.Node, error) {
-	var buf bytes.Buffer
-	node, err := NewEncoder(&buf, opts...).EncodeToNode(v)
-	if err != nil {
-		return nil, err
-	}
-	return node, nil
+	_ = "STUB: not implemented"
+	return *new(ast.Node), nil
 }
 
 // Unmarshal decodes the first document found within the in byte slice
@@ -191,34 +179,24 @@ func ValueToNode(v interface{}, opts ...EncodeOption) (ast.Node, error) {
 //
 // See the documentation of Marshal for the format of tags and a list of
 // supported tag options.
-func Unmarshal(data []byte, v interface{}) error {
-	return UnmarshalWithOptions(data, v)
-}
+func Unmarshal(data []byte, v interface{}) error { _ = "STUB: not implemented"; return nil }
 
 // UnmarshalWithOptions decodes with DecodeOptions the first document found within the in byte slice
 // and assigns decoded values into the out value.
 func UnmarshalWithOptions(data []byte, v interface{}, opts ...DecodeOption) error {
-	return UnmarshalContext(context.Background(), data, v, opts...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // UnmarshalContext decodes with context.Context and DecodeOptions.
 func UnmarshalContext(ctx context.Context, data []byte, v interface{}, opts ...DecodeOption) error {
-	dec := NewDecoder(bytes.NewBuffer(data), opts...)
-	if err := dec.DecodeContext(ctx, v); err != nil {
-		if err == io.EOF {
-			return nil
-		}
-		return err
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
 // NodeToValue converts node to the value pointed to by v.
 func NodeToValue(node ast.Node, v interface{}, opts ...DecodeOption) error {
-	var buf bytes.Buffer
-	if err := NewDecoder(&buf, opts...).DecodeFromNode(node, v); err != nil {
-		return err
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
@@ -228,40 +206,13 @@ func NodeToValue(node ast.Node, v interface{}, opts ...DecodeOption) error {
 // If the second argument `colored` is true, the error message is colorized.
 // If the third argument `inclSource` is true, the error message will
 // contain snippets of the YAML source that was used.
-func FormatError(e error, colored, inclSource bool) string {
-	var yamlErr Error
-	if errors.As(e, &yamlErr) {
-		return yamlErr.FormatError(colored, inclSource)
-	}
-
-	return e.Error()
-}
+func FormatError(e error, colored, inclSource bool) string { _ = "STUB: not implemented"; return "" }
 
 // YAMLToJSON convert YAML bytes to JSON.
-func YAMLToJSON(bytes []byte) ([]byte, error) {
-	var v interface{}
-	if err := UnmarshalWithOptions(bytes, &v, UseOrderedMap()); err != nil {
-		return nil, err
-	}
-	out, err := MarshalWithOptions(v, JSON())
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
+func YAMLToJSON(bytes []byte) ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // JSONToYAML convert JSON bytes to YAML.
-func JSONToYAML(bytes []byte) ([]byte, error) {
-	var v interface{}
-	if err := UnmarshalWithOptions(bytes, &v, UseOrderedMap()); err != nil {
-		return nil, err
-	}
-	out, err := Marshal(v)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
+func JSONToYAML(bytes []byte) ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 var (
 	globalCustomMarshalerMu    sync.Mutex
@@ -277,25 +228,15 @@ var (
 // If RegisterCustomMarshaler and CustomMarshaler of EncodeOption are specified for the same type,
 // the CustomMarshaler specified in EncodeOption takes precedence.
 func RegisterCustomMarshaler[T any](marshaler func(T) ([]byte, error)) {
-	globalCustomMarshalerMu.Lock()
-	defer globalCustomMarshalerMu.Unlock()
-
-	var typ T
-	globalCustomMarshalerMap[reflect.TypeOf(typ)] = func(ctx context.Context, v interface{}) ([]byte, error) {
-		return marshaler(v.(T))
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // RegisterCustomMarshalerContext overrides any encoding process for the type specified in generics.
 // Similar to RegisterCustomMarshalerContext, but allows passing a context to the unmarshaler function.
 func RegisterCustomMarshalerContext[T any](marshaler func(context.Context, T) ([]byte, error)) {
-	globalCustomMarshalerMu.Lock()
-	defer globalCustomMarshalerMu.Unlock()
-
-	var typ T
-	globalCustomMarshalerMap[reflect.TypeOf(typ)] = func(ctx context.Context, v interface{}) ([]byte, error) {
-		return marshaler(ctx, v.(T))
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // RegisterCustomUnmarshaler overrides any decoding process for the type specified in generics.
@@ -304,25 +245,15 @@ func RegisterCustomMarshalerContext[T any](marshaler func(context.Context, T) ([
 // NOTE: If RegisterCustomUnmarshaler and CustomUnmarshaler of DecodeOption are specified for the same type,
 // the CustomUnmarshaler specified in DecodeOption takes precedence.
 func RegisterCustomUnmarshaler[T any](unmarshaler func(*T, []byte) error) {
-	globalCustomUnmarshalerMu.Lock()
-	defer globalCustomUnmarshalerMu.Unlock()
-
-	var typ *T
-	globalCustomUnmarshalerMap[reflect.TypeOf(typ)] = func(ctx context.Context, v interface{}, b []byte) error {
-		return unmarshaler(v.(*T), b)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // RegisterCustomUnmarshalerContext overrides any decoding process for the type specified in generics.
 // Similar to RegisterCustomUnmarshalerContext, but allows passing a context to the unmarshaler function.
 func RegisterCustomUnmarshalerContext[T any](unmarshaler func(context.Context, *T, []byte) error) {
-	globalCustomUnmarshalerMu.Lock()
-	defer globalCustomUnmarshalerMu.Unlock()
-
-	var typ *T
-	globalCustomUnmarshalerMap[reflect.TypeOf(typ)] = func(ctx context.Context, v interface{}, b []byte) error {
-		return unmarshaler(ctx, v.(*T), b)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // RawMessage is a raw encoded YAML value. It implements [BytesMarshaler] and
@@ -333,25 +264,10 @@ func RegisterCustomUnmarshalerContext[T any](unmarshaler func(context.Context, *
 // This is similar to [json.RawMessage] in the stdlib.
 type RawMessage []byte
 
-func (m RawMessage) MarshalYAML() ([]byte, error) {
-	if m == nil {
-		return []byte("null"), nil
-	}
-	return m, nil
-}
+func (m RawMessage) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
-func (m *RawMessage) UnmarshalYAML(dt []byte) error {
-	if m == nil {
-		return errors.New("yaml.RawMessage: UnmarshalYAML on nil pointer")
-	}
-	*m = append((*m)[0:0], dt...)
-	return nil
-}
+func (m *RawMessage) UnmarshalYAML(dt []byte) error { _ = "STUB: not implemented"; return nil }
 
-func (m *RawMessage) UnmarshalJSON(b []byte) error {
-	return m.UnmarshalYAML(b)
-}
+func (m *RawMessage) UnmarshalJSON(b []byte) error { _ = "STUB: not implemented"; return nil }
 
-func (m RawMessage) MarshalJSON() ([]byte, error) {
-	return YAMLToJSON(m)
-}
+func (m RawMessage) MarshalJSON() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }

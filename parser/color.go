@@ -1,7 +1,5 @@
 package parser
 
-import "fmt"
-
 const (
 	colorFgHiBlack int = iota + 90
 	colorFgHiRed
@@ -21,8 +19,4 @@ var colorTable = []int{
 	colorFgHiCyan,
 }
 
-func colorize(idx int, content string) string {
-	colorIdx := idx % len(colorTable)
-	color := colorTable[colorIdx]
-	return fmt.Sprintf("\x1b[1;%dm", color) + content + "\x1b[22;0m"
-}
+func colorize(idx int, content string) string { _ = "STUB: not implemented"; return "" }

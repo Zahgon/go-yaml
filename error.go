@@ -1,8 +1,6 @@
 package yaml
 
 import (
-	"fmt"
-
 	"github.com/goccy/go-yaml/ast"
 	"github.com/goccy/go-yaml/internal/errors"
 )
@@ -29,49 +27,29 @@ type (
 	Error                   = errors.Error
 )
 
-func ErrUnsupportedHeadPositionType(node ast.Node) error {
-	return fmt.Errorf("unsupported comment head position for %s", node.Type())
-}
+func ErrUnsupportedHeadPositionType(node ast.Node) error { _ = "STUB: not implemented"; return nil }
 
-func ErrUnsupportedLinePositionType(node ast.Node) error {
-	return fmt.Errorf("unsupported comment line position for %s", node.Type())
-}
+func ErrUnsupportedLinePositionType(node ast.Node) error { _ = "STUB: not implemented"; return nil }
 
-func ErrUnsupportedFootPositionType(node ast.Node) error {
-	return fmt.Errorf("unsupported comment foot position for %s", node.Type())
-}
+func ErrUnsupportedFootPositionType(node ast.Node) error { _ = "STUB: not implemented"; return nil }
 
 // IsInvalidQueryError whether err is ErrInvalidQuery or not.
-func IsInvalidQueryError(err error) bool {
-	return errors.Is(err, ErrInvalidQuery)
-}
+func IsInvalidQueryError(err error) bool { _ = "STUB: not implemented"; return false }
 
 // IsInvalidPathError whether err is ErrInvalidPath or not.
-func IsInvalidPathError(err error) bool {
-	return errors.Is(err, ErrInvalidPath)
-}
+func IsInvalidPathError(err error) bool { _ = "STUB: not implemented"; return false }
 
 // IsInvalidPathStringError whether err is ErrInvalidPathString or not.
-func IsInvalidPathStringError(err error) bool {
-	return errors.Is(err, ErrInvalidPathString)
-}
+func IsInvalidPathStringError(err error) bool { _ = "STUB: not implemented"; return false }
 
 // IsNotFoundNodeError whether err is ErrNotFoundNode or not.
-func IsNotFoundNodeError(err error) bool {
-	return errors.Is(err, ErrNotFoundNode)
-}
+func IsNotFoundNodeError(err error) bool { _ = "STUB: not implemented"; return false }
 
 // IsInvalidTokenTypeError whether err is ast.ErrInvalidTokenType or not.
-func IsInvalidTokenTypeError(err error) bool {
-	return errors.Is(err, ast.ErrInvalidTokenType)
-}
+func IsInvalidTokenTypeError(err error) bool { _ = "STUB: not implemented"; return false }
 
 // IsInvalidAnchorNameError whether err is ast.ErrInvalidAnchorName or not.
-func IsInvalidAnchorNameError(err error) bool {
-	return errors.Is(err, ast.ErrInvalidAnchorName)
-}
+func IsInvalidAnchorNameError(err error) bool { _ = "STUB: not implemented"; return false }
 
 // IsInvalidAliasNameError whether err is ast.ErrInvalidAliasName or not.
-func IsInvalidAliasNameError(err error) bool {
-	return errors.Is(err, ast.ErrInvalidAliasName)
-}
+func IsInvalidAliasNameError(err error) bool { _ = "STUB: not implemented"; return false }

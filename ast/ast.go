@@ -2,11 +2,7 @@ package ast
 
 import (
 	"errors"
-	"fmt"
 	"io"
-	"math"
-	"strconv"
-	"strings"
 
 	"github.com/goccy/go-yaml/token"
 )
@@ -68,107 +64,11 @@ const (
 )
 
 // String node type identifier to text
-func (t NodeType) String() string {
-	switch t {
-	case UnknownNodeType:
-		return "UnknownNode"
-	case DocumentType:
-		return "Document"
-	case NullType:
-		return "Null"
-	case BoolType:
-		return "Bool"
-	case IntegerType:
-		return "Integer"
-	case FloatType:
-		return "Float"
-	case InfinityType:
-		return "Infinity"
-	case NanType:
-		return "Nan"
-	case StringType:
-		return "String"
-	case MergeKeyType:
-		return "MergeKey"
-	case LiteralType:
-		return "Literal"
-	case MappingType:
-		return "Mapping"
-	case MappingKeyType:
-		return "MappingKey"
-	case MappingValueType:
-		return "MappingValue"
-	case SequenceType:
-		return "Sequence"
-	case SequenceEntryType:
-		return "SequenceEntry"
-	case AnchorType:
-		return "Anchor"
-	case AliasType:
-		return "Alias"
-	case DirectiveType:
-		return "Directive"
-	case TagType:
-		return "Tag"
-	case CommentType:
-		return "Comment"
-	case CommentGroupType:
-		return "CommentGroup"
-	}
-	return ""
-}
+func (t NodeType) String() string { _ = "STUB: not implemented"; return "" }
 
 // String node type identifier to YAML Structure name
 // based on https://yaml.org/spec/1.2/spec.html
-func (t NodeType) YAMLName() string {
-	switch t {
-	case UnknownNodeType:
-		return "unknown"
-	case DocumentType:
-		return "document"
-	case NullType:
-		return "null"
-	case BoolType:
-		return "boolean"
-	case IntegerType:
-		return "int"
-	case FloatType:
-		return "float"
-	case InfinityType:
-		return "inf"
-	case NanType:
-		return "nan"
-	case StringType:
-		return "string"
-	case MergeKeyType:
-		return "merge key"
-	case LiteralType:
-		return "scalar"
-	case MappingType:
-		return "mapping"
-	case MappingKeyType:
-		return "key"
-	case MappingValueType:
-		return "value"
-	case SequenceType:
-		return "sequence"
-	case SequenceEntryType:
-		return "value"
-	case AnchorType:
-		return "anchor"
-	case AliasType:
-		return "alias"
-	case DirectiveType:
-		return "directive"
-	case TagType:
-		return "tag"
-	case CommentType:
-		return "comment"
-	case CommentGroupType:
-		return "comment"
-	}
-	return ""
-}
+func (t NodeType) YAMLName() string { _ = "STUB: not implemented"; return "" }
 
 // Node type of node
 type Node interface {
@@ -220,302 +120,123 @@ type BaseNode struct {
 }
 
 func addCommentString(base string, node *CommentGroupNode) string {
-	return fmt.Sprintf("%s %s", base, node.String())
+	_ = "STUB: not implemented"
+	return ""
 }
 
-func (n *BaseNode) readLen() int {
-	return n.read
-}
+func (n *BaseNode) readLen() int { _ = "STUB: not implemented"; return 0 }
 
-func (n *BaseNode) clearLen() {
-	n.read = 0
-}
+func (n *BaseNode) clearLen() { _ = "STUB: not implemented"; return }
 
 func (n *BaseNode) addReadLen(len int) {
-	n.read += len
+	_ = "STUB: not implemented"
+
+	// GetPath returns YAMLPath for the current node.
+	return
 }
 
-// GetPath returns YAMLPath for the current node.
-func (n *BaseNode) GetPath() string {
-	if n == nil {
-		return ""
-	}
-	return n.Path
-}
+func (n *BaseNode) GetPath() string { _ = "STUB: not implemented"; return "" }
 
 // SetPath set YAMLPath for the current node.
-func (n *BaseNode) SetPath(path string) {
-	if n == nil {
-		return
-	}
-	n.Path = path
-}
+func (n *BaseNode) SetPath(path string) { _ = "STUB: not implemented"; return }
 
 // GetComment returns comment token instance
 func (n *BaseNode) GetComment() *CommentGroupNode {
-	return n.Comment
-}
+	_ = "STUB: not implemented"
 
-// SetComment set comment token
-func (n *BaseNode) SetComment(node *CommentGroupNode) error {
-	n.Comment = node
+	// SetComment set comment token
 	return nil
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
+func (n *BaseNode) SetComment(node *CommentGroupNode) error { _ = "STUB: not implemented"; return nil }
 
-func readNode(p []byte, node Node) (int, error) {
-	s := node.String()
-	readLen := node.readLen()
-	remain := len(s) - readLen
-	if remain == 0 {
-		node.clearLen()
-		return 0, io.EOF
-	}
-	size := min(remain, len(p))
-	for idx, b := range []byte(s[readLen : readLen+size]) {
-		p[idx] = byte(b)
-	}
-	node.addReadLen(size)
-	return size, nil
-}
+func min(a, b int) int { _ = "STUB: not implemented"; return 0 }
 
-func checkLineBreak(t *token.Token) bool {
-	if t.Prev != nil {
-		lbc := "\n"
-		prev := t.Prev
-		var adjustment int
-		// if the previous type is sequence entry use the previous type for that
-		if prev.Type == token.SequenceEntryType {
-			// as well as switching to previous type count any new lines in origin to account for:
-			// -
-			//   b: c
-			adjustment = strings.Count(strings.TrimRight(t.Origin, lbc), lbc)
-			if prev.Prev != nil {
-				prev = prev.Prev
-			}
-		}
-		lineDiff := t.Position.Line - prev.Position.Line - 1
-		if lineDiff > 0 {
-			if prev.Type == token.StringType {
-				// Remove any line breaks included in multiline string
-				adjustment += strings.Count(strings.TrimRight(strings.TrimSpace(prev.Origin), lbc), lbc)
-			}
-			// Due to the way that comment parsing works its assumed that when a null value does not have new line in origin
-			// it was squashed therefore difference is ignored.
-			// foo:
-			//  bar:
-			//  # comment
-			//  baz: 1
-			// becomes
-			// foo:
-			//  bar: null # comment
-			//
-			//  baz: 1
-			if prev.Type == token.NullType || prev.Type == token.ImplicitNullType {
-				return strings.Count(prev.Origin, lbc) > 0
-			}
-			if lineDiff-adjustment > 0 {
-				return true
-			}
-		}
-	}
-	return false
-}
+func readNode(p []byte, node Node) (int, error) { _ = "STUB: not implemented"; return 0, nil }
+
+func checkLineBreak(t *token.Token) bool { _ = "STUB: not implemented"; return false }
+
+// if the previous type is sequence entry use the previous type for that
+
+// as well as switching to previous type count any new lines in origin to account for:
+// -
+//   b: c
+
+// Remove any line breaks included in multiline string
+
+// Due to the way that comment parsing works its assumed that when a null value does not have new line in origin
+// it was squashed therefore difference is ignored.
+// foo:
+//  bar:
+//  # comment
+//  baz: 1
+// becomes
+// foo:
+//  bar: null # comment
+//
+//  baz: 1
 
 // Null create node for null value
-func Null(tk *token.Token) *NullNode {
-	return &NullNode{
-		BaseNode: &BaseNode{},
-		Token:    tk,
-	}
-}
+func Null(tk *token.Token) *NullNode { _ = "STUB: not implemented"; return nil }
 
 // Bool create node for boolean value
-func Bool(tk *token.Token) *BoolNode {
-	b, _ := strconv.ParseBool(tk.Value)
-	return &BoolNode{
-		BaseNode: &BaseNode{},
-		Token:    tk,
-		Value:    b,
-	}
-}
+func Bool(tk *token.Token) *BoolNode { _ = "STUB: not implemented"; return nil }
 
 // Integer create node for integer value
-func Integer(tk *token.Token) *IntegerNode {
-	var v any
-	if num := token.ToNumber(tk.Value); num != nil {
-		v = num.Value
-	}
-	return &IntegerNode{
-		BaseNode: &BaseNode{},
-		Token:    tk,
-		Value:    v,
-	}
-}
+func Integer(tk *token.Token) *IntegerNode { _ = "STUB: not implemented"; return nil }
 
 // Float create node for float value
-func Float(tk *token.Token) *FloatNode {
-	var v float64
-	if num := token.ToNumber(tk.Value); num != nil && num.Type == token.NumberTypeFloat {
-		value, ok := num.Value.(float64)
-		if ok {
-			v = value
-		}
-	}
-	return &FloatNode{
-		BaseNode: &BaseNode{},
-		Token:    tk,
-		Value:    v,
-	}
-}
+func Float(tk *token.Token) *FloatNode { _ = "STUB: not implemented"; return nil }
 
 // Infinity create node for .inf or -.inf value
-func Infinity(tk *token.Token) *InfinityNode {
-	node := &InfinityNode{
-		BaseNode: &BaseNode{},
-		Token:    tk,
-	}
-	switch tk.Value {
-	case ".inf", ".Inf", ".INF":
-		node.Value = math.Inf(0)
-	case "-.inf", "-.Inf", "-.INF":
-		node.Value = math.Inf(-1)
-	}
-	return node
-}
+func Infinity(tk *token.Token) *InfinityNode { _ = "STUB: not implemented"; return nil }
 
 // Nan create node for .nan value
-func Nan(tk *token.Token) *NanNode {
-	return &NanNode{
-		BaseNode: &BaseNode{},
-		Token:    tk,
-	}
-}
+func Nan(tk *token.Token) *NanNode { _ = "STUB: not implemented"; return nil }
 
 // String create node for string value
-func String(tk *token.Token) *StringNode {
-	return &StringNode{
-		BaseNode: &BaseNode{},
-		Token:    tk,
-		Value:    tk.Value,
-	}
-}
+func String(tk *token.Token) *StringNode { _ = "STUB: not implemented"; return nil }
 
 // Comment create node for comment
-func Comment(tk *token.Token) *CommentNode {
-	return &CommentNode{
-		BaseNode: &BaseNode{},
-		Token:    tk,
-	}
-}
+func Comment(tk *token.Token) *CommentNode { _ = "STUB: not implemented"; return nil }
 
-func CommentGroup(comments []*token.Token) *CommentGroupNode {
-	nodes := []*CommentNode{}
-	for _, comment := range comments {
-		nodes = append(nodes, Comment(comment))
-	}
-	return &CommentGroupNode{
-		BaseNode: &BaseNode{},
-		Comments: nodes,
-	}
-}
+func CommentGroup(comments []*token.Token) *CommentGroupNode { _ = "STUB: not implemented"; return nil }
 
 // MergeKey create node for merge key ( << )
-func MergeKey(tk *token.Token) *MergeKeyNode {
-	return &MergeKeyNode{
-		BaseNode: &BaseNode{},
-		Token:    tk,
-	}
-}
+func MergeKey(tk *token.Token) *MergeKeyNode { _ = "STUB: not implemented"; return nil }
 
 // Mapping create node for map
 func Mapping(tk *token.Token, isFlowStyle bool, values ...*MappingValueNode) *MappingNode {
-	node := &MappingNode{
-		BaseNode:    &BaseNode{},
-		Start:       tk,
-		IsFlowStyle: isFlowStyle,
-		Values:      []*MappingValueNode{},
-	}
-	node.Values = append(node.Values, values...)
-	return node
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // MappingValue create node for mapping value
 func MappingValue(tk *token.Token, key MapKeyNode, value Node) *MappingValueNode {
-	return &MappingValueNode{
-		BaseNode: &BaseNode{},
-		Start:    tk,
-		Key:      key,
-		Value:    value,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // MappingKey create node for map key ( '?' ).
-func MappingKey(tk *token.Token) *MappingKeyNode {
-	return &MappingKeyNode{
-		BaseNode: &BaseNode{},
-		Start:    tk,
-	}
-}
+func MappingKey(tk *token.Token) *MappingKeyNode { _ = "STUB: not implemented"; return nil }
 
 // Sequence create node for sequence
 func Sequence(tk *token.Token, isFlowStyle bool) *SequenceNode {
-	return &SequenceNode{
-		BaseNode:    &BaseNode{},
-		Start:       tk,
-		IsFlowStyle: isFlowStyle,
-		Values:      []Node{},
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
-func Anchor(tk *token.Token) *AnchorNode {
-	return &AnchorNode{
-		BaseNode: &BaseNode{},
-		Start:    tk,
-	}
-}
+func Anchor(tk *token.Token) *AnchorNode { _ = "STUB: not implemented"; return nil }
 
-func Alias(tk *token.Token) *AliasNode {
-	return &AliasNode{
-		BaseNode: &BaseNode{},
-		Start:    tk,
-	}
-}
+func Alias(tk *token.Token) *AliasNode { _ = "STUB: not implemented"; return nil }
 
-func Document(tk *token.Token, body Node) *DocumentNode {
-	return &DocumentNode{
-		BaseNode: &BaseNode{},
-		Start:    tk,
-		Body:     body,
-	}
-}
+func Document(tk *token.Token, body Node) *DocumentNode { _ = "STUB: not implemented"; return nil }
 
-func Directive(tk *token.Token) *DirectiveNode {
-	return &DirectiveNode{
-		BaseNode: &BaseNode{},
-		Start:    tk,
-	}
-}
+func Directive(tk *token.Token) *DirectiveNode { _ = "STUB: not implemented"; return nil }
 
-func Literal(tk *token.Token) *LiteralNode {
-	return &LiteralNode{
-		BaseNode: &BaseNode{},
-		Start:    tk,
-	}
-}
+func Literal(tk *token.Token) *LiteralNode { _ = "STUB: not implemented"; return nil }
 
-func Tag(tk *token.Token) *TagNode {
-	return &TagNode{
-		BaseNode: &BaseNode{},
-		Start:    tk,
-	}
-}
+func Tag(tk *token.Token) *TagNode { _ = "STUB: not implemented"; return nil }
 
 // File contains all documents in YAML file
 type File struct {
@@ -524,29 +245,10 @@ type File struct {
 }
 
 // Read implements (io.Reader).Read
-func (f *File) Read(p []byte) (int, error) {
-	for _, doc := range f.Docs {
-		n, err := doc.Read(p)
-		if err == io.EOF {
-			continue
-		}
-		return n, nil
-	}
-	return 0, io.EOF
-}
+func (f *File) Read(p []byte) (int, error) { _ = "STUB: not implemented"; return 0, nil }
 
 // String all documents to text
-func (f *File) String() string {
-	docs := []string{}
-	for _, doc := range f.Docs {
-		docs = append(docs, doc.String())
-	}
-	if len(docs) > 0 {
-		return strings.Join(docs, "\n") + "\n"
-	} else {
-		return ""
-	}
-}
+func (f *File) String() string { _ = "STUB: not implemented"; return "" }
 
 // DocumentNode type of Document
 type DocumentNode struct {
@@ -558,43 +260,30 @@ type DocumentNode struct {
 
 // Read implements (io.Reader).Read
 func (d *DocumentNode) Read(p []byte) (int, error) {
-	return readNode(p, d)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns DocumentNodeType
+		nil
 }
 
-// Type returns DocumentNodeType
-func (d *DocumentNode) Type() NodeType { return DocumentType }
+func (d *DocumentNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
-func (d *DocumentNode) GetToken() *token.Token {
-	return d.Body.GetToken()
+	// GetToken returns token instance
+	return *new(NodeType)
 }
+
+func (d *DocumentNode) GetToken() *token.Token { _ = "STUB: not implemented"; return nil }
 
 // AddColumn add column number to child nodes recursively
-func (d *DocumentNode) AddColumn(col int) {
-	if d.Body != nil {
-		d.Body.AddColumn(col)
-	}
-}
+func (d *DocumentNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // String document to text
-func (d *DocumentNode) String() string {
-	doc := []string{}
-	if d.Start != nil {
-		doc = append(doc, d.Start.Value)
-	}
-	if d.Body != nil {
-		doc = append(doc, d.Body.String())
-	}
-	if d.End != nil {
-		doc = append(doc, d.End.Value)
-	}
-	return strings.Join(doc, "\n")
-}
+func (d *DocumentNode) String() string { _ = "STUB: not implemented"; return "" }
 
 // MarshalYAML encodes to a YAML text
-func (d *DocumentNode) MarshalYAML() ([]byte, error) {
-	return []byte(d.String()), nil
-}
+func (d *DocumentNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // NullNode type of null node
 type NullNode struct {
@@ -604,56 +293,56 @@ type NullNode struct {
 
 // Read implements (io.Reader).Read
 func (n *NullNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns NullType
+		nil
 }
 
-// Type returns NullType
-func (n *NullNode) Type() NodeType { return NullType }
+func (n *NullNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
+	// GetToken returns token instance
+	return *new(NodeType)
+}
+
 func (n *NullNode) GetToken() *token.Token {
-	return n.Token
-}
+	_ = "STUB: not implemented"
 
-// AddColumn add column number to child nodes recursively
-func (n *NullNode) AddColumn(col int) {
-	n.Token.AddColumn(col)
-}
-
-// GetValue returns nil value
-func (n *NullNode) GetValue() interface{} {
+	// AddColumn add column number to child nodes recursively
 	return nil
 }
 
-// String returns `null` text
-func (n *NullNode) String() string {
-	if n.Token.Type == token.ImplicitNullType {
-		if n.Comment != nil {
-			return n.Comment.String()
-		}
-		return ""
-	}
-	if n.Comment != nil {
-		return addCommentString("null", n.Comment)
-	}
-	return n.stringWithoutComment()
+func (n *NullNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
+
+// GetValue returns nil value
+func (n *NullNode) GetValue() interface{} {
+	_ = "STUB: not implemented"
+
+	// String returns `null` text
+	return nil
 }
+
+func (n *NullNode) String() string { _ = "STUB: not implemented"; return "" }
 
 func (n *NullNode) stringWithoutComment() string {
-	return "null"
+	_ = "STUB: not implemented"
+
+	// MarshalYAML encodes to a YAML text
+	return ""
 }
 
-// MarshalYAML encodes to a YAML text
-func (n *NullNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *NullNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // IsMergeKey returns whether it is a MergeKey node.
 func (n *NullNode) IsMergeKey() bool {
+	_ = "STUB: not implemented"
+
+	// IntegerNode type of integer node
 	return false
 }
 
-// IntegerNode type of integer node
 type IntegerNode struct {
 	*BaseNode
 	Token *token.Token
@@ -662,50 +351,52 @@ type IntegerNode struct {
 
 // Read implements (io.Reader).Read
 func (n *IntegerNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns IntegerType
+		nil
 }
 
-// Type returns IntegerType
-func (n *IntegerNode) Type() NodeType { return IntegerType }
+func (n *IntegerNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
+	// GetToken returns token instance
+	return *new(NodeType)
+}
+
 func (n *IntegerNode) GetToken() *token.Token {
-	return n.Token
+	_ = "STUB: not implemented"
+
+	// AddColumn add column number to child nodes recursively
+	return nil
 }
 
-// AddColumn add column number to child nodes recursively
-func (n *IntegerNode) AddColumn(col int) {
-	n.Token.AddColumn(col)
-}
+func (n *IntegerNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // GetValue returns int64 value
 func (n *IntegerNode) GetValue() interface{} {
-	return n.Value
+	_ = "STUB: not implemented"
+
+	// String int64 to text
+	return nil
 }
 
-// String int64 to text
-func (n *IntegerNode) String() string {
-	if n.Comment != nil {
-		return addCommentString(n.Token.Value, n.Comment)
-	}
-	return n.stringWithoutComment()
-}
+func (n *IntegerNode) String() string { _ = "STUB: not implemented"; return "" }
 
-func (n *IntegerNode) stringWithoutComment() string {
-	return n.Token.Value
-}
+func (n *IntegerNode) stringWithoutComment() string { _ = "STUB: not implemented"; return "" }
 
 // MarshalYAML encodes to a YAML text
-func (n *IntegerNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *IntegerNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // IsMergeKey returns whether it is a MergeKey node.
 func (n *IntegerNode) IsMergeKey() bool {
+	_ = "STUB: not implemented"
+
+	// FloatNode type of float node
 	return false
 }
 
-// FloatNode type of float node
 type FloatNode struct {
 	*BaseNode
 	Token     *token.Token
@@ -715,50 +406,52 @@ type FloatNode struct {
 
 // Read implements (io.Reader).Read
 func (n *FloatNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns FloatType
+		nil
 }
 
-// Type returns FloatType
-func (n *FloatNode) Type() NodeType { return FloatType }
+func (n *FloatNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
+	// GetToken returns token instance
+	return *new(NodeType)
+}
+
 func (n *FloatNode) GetToken() *token.Token {
-	return n.Token
+	_ = "STUB: not implemented"
+
+	// AddColumn add column number to child nodes recursively
+	return nil
 }
 
-// AddColumn add column number to child nodes recursively
-func (n *FloatNode) AddColumn(col int) {
-	n.Token.AddColumn(col)
-}
+func (n *FloatNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // GetValue returns float64 value
 func (n *FloatNode) GetValue() interface{} {
-	return n.Value
+	_ = "STUB: not implemented"
+
+	// String float64 to text
+	return nil
 }
 
-// String float64 to text
-func (n *FloatNode) String() string {
-	if n.Comment != nil {
-		return addCommentString(n.Token.Value, n.Comment)
-	}
-	return n.stringWithoutComment()
-}
+func (n *FloatNode) String() string { _ = "STUB: not implemented"; return "" }
 
-func (n *FloatNode) stringWithoutComment() string {
-	return n.Token.Value
-}
+func (n *FloatNode) stringWithoutComment() string { _ = "STUB: not implemented"; return "" }
 
 // MarshalYAML encodes to a YAML text
-func (n *FloatNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *FloatNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // IsMergeKey returns whether it is a MergeKey node.
 func (n *FloatNode) IsMergeKey() bool {
+	_ = "STUB: not implemented"
+
+	// StringNode type of string node
 	return false
 }
 
-// StringNode type of string node
 type StringNode struct {
 	*BaseNode
 	Token *token.Token
@@ -767,118 +460,64 @@ type StringNode struct {
 
 // Read implements (io.Reader).Read
 func (n *StringNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns StringType
+		nil
 }
 
-// Type returns StringType
-func (n *StringNode) Type() NodeType { return StringType }
+func (n *StringNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
+	// GetToken returns token instance
+	return *new(NodeType)
+}
+
 func (n *StringNode) GetToken() *token.Token {
-	return n.Token
+	_ = "STUB: not implemented"
+
+	// AddColumn add column number to child nodes recursively
+	return nil
 }
 
-// AddColumn add column number to child nodes recursively
-func (n *StringNode) AddColumn(col int) {
-	n.Token.AddColumn(col)
-}
+func (n *StringNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // GetValue returns string value
 func (n *StringNode) GetValue() interface{} {
-	return n.Value
+	_ = "STUB: not implemented"
+
+	// IsMergeKey returns whether it is a MergeKey node.
+	return nil
 }
 
-// IsMergeKey returns whether it is a MergeKey node.
 func (n *StringNode) IsMergeKey() bool {
+	_ = "STUB: not implemented"
+
+	// escapeSingleQuote escapes s to a single quoted scalar.
+	// https://yaml.org/spec/1.2.2/#732-single-quoted-style
 	return false
 }
 
-// escapeSingleQuote escapes s to a single quoted scalar.
-// https://yaml.org/spec/1.2.2/#732-single-quoted-style
-func escapeSingleQuote(s string) string {
-	var sb strings.Builder
-	growLen := len(s) + // s includes also one ' from the doubled pair
-		2 + // opening and closing '
-		strings.Count(s, "'") // ' added by ReplaceAll
-	sb.Grow(growLen)
-	sb.WriteString("'")
-	sb.WriteString(strings.ReplaceAll(s, "'", "''"))
-	sb.WriteString("'")
-	return sb.String()
-}
+func escapeSingleQuote(s string) string { _ = "STUB: not implemented"; return "" }
+
+// s includes also one ' from the doubled pair
+// opening and closing '
+// ' added by ReplaceAll
 
 // String string value to text with quote or literal header if required
-func (n *StringNode) String() string {
-	switch n.Token.Type {
-	case token.SingleQuoteType:
-		quoted := escapeSingleQuote(n.Value)
-		if n.Comment != nil {
-			return addCommentString(quoted, n.Comment)
-		}
-		return quoted
-	case token.DoubleQuoteType:
-		quoted := strconv.Quote(n.Value)
-		if n.Comment != nil {
-			return addCommentString(quoted, n.Comment)
-		}
-		return quoted
-	}
+func (n *StringNode) String() string { _ = "STUB: not implemented"; return "" }
 
-	lbc := token.DetectLineBreakCharacter(n.Value)
-	if strings.Contains(n.Value, lbc) {
-		// This block assumes that the line breaks in this inside scalar content and the Outside scalar content are the same.
-		// It works mostly, but inconsistencies occur if line break characters are mixed.
-		header := token.LiteralBlockHeader(n.Value)
-		space := strings.Repeat(" ", n.Token.Position.Column-1)
-		indent := strings.Repeat(" ", n.Token.Position.IndentNum)
-		values := []string{}
-		for _, v := range strings.Split(n.Value, lbc) {
-			values = append(values, fmt.Sprintf("%s%s%s", space, indent, v))
-		}
-		block := strings.TrimSuffix(strings.TrimSuffix(strings.Join(values, lbc), fmt.Sprintf("%s%s%s", lbc, indent, space)), fmt.Sprintf("%s%s", indent, space))
-		return fmt.Sprintf("%s%s%s", header, lbc, block)
-	} else if len(n.Value) > 0 && (n.Value[0] == '{' || n.Value[0] == '[') {
-		return fmt.Sprintf(`'%s'`, n.Value)
-	}
-	if n.Comment != nil {
-		return addCommentString(n.Value, n.Comment)
-	}
-	return n.Value
-}
+// This block assumes that the line breaks in this inside scalar content and the Outside scalar content are the same.
+// It works mostly, but inconsistencies occur if line break characters are mixed.
 
-func (n *StringNode) stringWithoutComment() string {
-	switch n.Token.Type {
-	case token.SingleQuoteType:
-		quoted := fmt.Sprintf(`'%s'`, n.Value)
-		return quoted
-	case token.DoubleQuoteType:
-		quoted := strconv.Quote(n.Value)
-		return quoted
-	}
+func (n *StringNode) stringWithoutComment() string { _ = "STUB: not implemented"; return "" }
 
-	lbc := token.DetectLineBreakCharacter(n.Value)
-	if strings.Contains(n.Value, lbc) {
-		// This block assumes that the line breaks in this inside scalar content and the Outside scalar content are the same.
-		// It works mostly, but inconsistencies occur if line break characters are mixed.
-		header := token.LiteralBlockHeader(n.Value)
-		space := strings.Repeat(" ", n.Token.Position.Column-1)
-		indent := strings.Repeat(" ", n.Token.Position.IndentNum)
-		values := []string{}
-		for _, v := range strings.Split(n.Value, lbc) {
-			values = append(values, fmt.Sprintf("%s%s%s", space, indent, v))
-		}
-		block := strings.TrimSuffix(strings.TrimSuffix(strings.Join(values, lbc), fmt.Sprintf("%s%s%s", lbc, indent, space)), fmt.Sprintf("  %s", space))
-		return fmt.Sprintf("%s%s%s", header, lbc, block)
-	} else if len(n.Value) > 0 && (n.Value[0] == '{' || n.Value[0] == '[') {
-		return fmt.Sprintf(`'%s'`, n.Value)
-	}
-	return n.Value
-}
+// This block assumes that the line breaks in this inside scalar content and the Outside scalar content are the same.
+// It works mostly, but inconsistencies occur if line break characters are mixed.
 
 // MarshalYAML encodes to a YAML text
-func (n *StringNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *StringNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // LiteralNode type of literal node
 type LiteralNode struct {
@@ -889,55 +528,56 @@ type LiteralNode struct {
 
 // Read implements (io.Reader).Read
 func (n *LiteralNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns LiteralType
+		nil
 }
 
-// Type returns LiteralType
-func (n *LiteralNode) Type() NodeType { return LiteralType }
+func (n *LiteralNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
+	// GetToken returns token instance
+	return *new(NodeType)
+}
+
 func (n *LiteralNode) GetToken() *token.Token {
-	return n.Start
+	_ = "STUB: not implemented"
+
+	// AddColumn add column number to child nodes recursively
+	return nil
 }
 
-// AddColumn add column number to child nodes recursively
-func (n *LiteralNode) AddColumn(col int) {
-	n.Start.AddColumn(col)
-	if n.Value != nil {
-		n.Value.AddColumn(col)
-	}
-}
+func (n *LiteralNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // GetValue returns string value
 func (n *LiteralNode) GetValue() interface{} {
-	return n.String()
+	_ = "STUB: not implemented"
+
+	// String literal to text
+	return nil
 }
 
-// String literal to text
-func (n *LiteralNode) String() string {
-	origin := n.Value.GetToken().Origin
-	lit := strings.TrimRight(strings.TrimRight(origin, " "), "\n")
-	if n.Comment != nil {
-		return fmt.Sprintf("%s %s\n%s", n.Start.Value, n.Comment.String(), lit)
-	}
-	return fmt.Sprintf("%s\n%s", n.Start.Value, lit)
-}
+func (n *LiteralNode) String() string { _ = "STUB: not implemented"; return "" }
 
 func (n *LiteralNode) stringWithoutComment() string {
-	return n.String()
+	_ = "STUB: not implemented"
+
+	// MarshalYAML encodes to a YAML text
+	return ""
 }
 
-// MarshalYAML encodes to a YAML text
-func (n *LiteralNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *LiteralNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // IsMergeKey returns whether it is a MergeKey node.
 func (n *LiteralNode) IsMergeKey() bool {
+	_ = "STUB: not implemented"
+
+	// MergeKeyNode type of merge key node
 	return false
 }
 
-// MergeKeyNode type of merge key node
 type MergeKeyNode struct {
 	*BaseNode
 	Token *token.Token
@@ -945,47 +585,48 @@ type MergeKeyNode struct {
 
 // Read implements (io.Reader).Read
 func (n *MergeKeyNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns MergeKeyType
+		nil
 }
 
-// Type returns MergeKeyType
-func (n *MergeKeyNode) Type() NodeType { return MergeKeyType }
+func (n *MergeKeyNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
+	// GetToken returns token instance
+	return *new(NodeType)
+}
+
 func (n *MergeKeyNode) GetToken() *token.Token {
-	return n.Token
+	_ = "STUB: not implemented"
+
+	// GetValue returns '<<' value
+	return nil
 }
 
-// GetValue returns '<<' value
-func (n *MergeKeyNode) GetValue() interface{} {
-	return n.Token.Value
-}
+func (n *MergeKeyNode) GetValue() interface{} { _ = "STUB: not implemented"; return nil }
 
 // String returns '<<' value
-func (n *MergeKeyNode) String() string {
-	return n.stringWithoutComment()
-}
+func (n *MergeKeyNode) String() string { _ = "STUB: not implemented"; return "" }
 
-func (n *MergeKeyNode) stringWithoutComment() string {
-	return n.Token.Value
-}
+func (n *MergeKeyNode) stringWithoutComment() string { _ = "STUB: not implemented"; return "" }
 
 // AddColumn add column number to child nodes recursively
-func (n *MergeKeyNode) AddColumn(col int) {
-	n.Token.AddColumn(col)
-}
+func (n *MergeKeyNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // MarshalYAML encodes to a YAML text
-func (n *MergeKeyNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *MergeKeyNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // IsMergeKey returns whether it is a MergeKey node.
 func (n *MergeKeyNode) IsMergeKey() bool {
-	return true
+	_ = "STUB: not implemented"
+
+	// BoolNode type of boolean node
+	return false
 }
 
-// BoolNode type of boolean node
 type BoolNode struct {
 	*BaseNode
 	Token *token.Token
@@ -994,50 +635,52 @@ type BoolNode struct {
 
 // Read implements (io.Reader).Read
 func (n *BoolNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns BoolType
+		nil
 }
 
-// Type returns BoolType
-func (n *BoolNode) Type() NodeType { return BoolType }
+func (n *BoolNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
+	// GetToken returns token instance
+	return *new(NodeType)
+}
+
 func (n *BoolNode) GetToken() *token.Token {
-	return n.Token
+	_ = "STUB: not implemented"
+
+	// AddColumn add column number to child nodes recursively
+	return nil
 }
 
-// AddColumn add column number to child nodes recursively
-func (n *BoolNode) AddColumn(col int) {
-	n.Token.AddColumn(col)
-}
+func (n *BoolNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // GetValue returns boolean value
 func (n *BoolNode) GetValue() interface{} {
-	return n.Value
+	_ = "STUB: not implemented"
+
+	// String boolean to text
+	return nil
 }
 
-// String boolean to text
-func (n *BoolNode) String() string {
-	if n.Comment != nil {
-		return addCommentString(n.Token.Value, n.Comment)
-	}
-	return n.stringWithoutComment()
-}
+func (n *BoolNode) String() string { _ = "STUB: not implemented"; return "" }
 
-func (n *BoolNode) stringWithoutComment() string {
-	return n.Token.Value
-}
+func (n *BoolNode) stringWithoutComment() string { _ = "STUB: not implemented"; return "" }
 
 // MarshalYAML encodes to a YAML text
-func (n *BoolNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *BoolNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // IsMergeKey returns whether it is a MergeKey node.
 func (n *BoolNode) IsMergeKey() bool {
+	_ = "STUB: not implemented"
+
+	// InfinityNode type of infinity node
 	return false
 }
 
-// InfinityNode type of infinity node
 type InfinityNode struct {
 	*BaseNode
 	Token *token.Token
@@ -1046,50 +689,52 @@ type InfinityNode struct {
 
 // Read implements (io.Reader).Read
 func (n *InfinityNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns InfinityType
+		nil
 }
 
-// Type returns InfinityType
-func (n *InfinityNode) Type() NodeType { return InfinityType }
+func (n *InfinityNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
+	// GetToken returns token instance
+	return *new(NodeType)
+}
+
 func (n *InfinityNode) GetToken() *token.Token {
-	return n.Token
+	_ = "STUB: not implemented"
+
+	// AddColumn add column number to child nodes recursively
+	return nil
 }
 
-// AddColumn add column number to child nodes recursively
-func (n *InfinityNode) AddColumn(col int) {
-	n.Token.AddColumn(col)
-}
+func (n *InfinityNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // GetValue returns math.Inf(0) or math.Inf(-1)
 func (n *InfinityNode) GetValue() interface{} {
-	return n.Value
+	_ = "STUB: not implemented"
+
+	// String infinity to text
+	return nil
 }
 
-// String infinity to text
-func (n *InfinityNode) String() string {
-	if n.Comment != nil {
-		return addCommentString(n.Token.Value, n.Comment)
-	}
-	return n.stringWithoutComment()
-}
+func (n *InfinityNode) String() string { _ = "STUB: not implemented"; return "" }
 
-func (n *InfinityNode) stringWithoutComment() string {
-	return n.Token.Value
-}
+func (n *InfinityNode) stringWithoutComment() string { _ = "STUB: not implemented"; return "" }
 
 // MarshalYAML encodes to a YAML text
-func (n *InfinityNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *InfinityNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // IsMergeKey returns whether it is a MergeKey node.
 func (n *InfinityNode) IsMergeKey() bool {
+	_ = "STUB: not implemented"
+
+	// NanNode type of nan node
 	return false
 }
 
-// NanNode type of nan node
 type NanNode struct {
 	*BaseNode
 	Token *token.Token
@@ -1097,50 +742,52 @@ type NanNode struct {
 
 // Read implements (io.Reader).Read
 func (n *NanNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns NanType
+		nil
 }
 
-// Type returns NanType
-func (n *NanNode) Type() NodeType { return NanType }
+func (n *NanNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
+	// GetToken returns token instance
+	return *new(NodeType)
+}
+
 func (n *NanNode) GetToken() *token.Token {
-	return n.Token
+	_ = "STUB: not implemented"
+
+	// AddColumn add column number to child nodes recursively
+	return nil
 }
 
-// AddColumn add column number to child nodes recursively
-func (n *NanNode) AddColumn(col int) {
-	n.Token.AddColumn(col)
-}
+func (n *NanNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // GetValue returns math.NaN()
 func (n *NanNode) GetValue() interface{} {
-	return math.NaN()
+	_ = "STUB: not implemented"
+
+	// String returns .nan
+	return nil
 }
 
-// String returns .nan
-func (n *NanNode) String() string {
-	if n.Comment != nil {
-		return addCommentString(n.Token.Value, n.Comment)
-	}
-	return n.stringWithoutComment()
-}
+func (n *NanNode) String() string { _ = "STUB: not implemented"; return "" }
 
-func (n *NanNode) stringWithoutComment() string {
-	return n.Token.Value
-}
+func (n *NanNode) stringWithoutComment() string { _ = "STUB: not implemented"; return "" }
 
 // MarshalYAML encodes to a YAML text
-func (n *NanNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *NanNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // IsMergeKey returns whether it is a MergeKey node.
 func (n *NanNode) IsMergeKey() bool {
+	_ = "STUB: not implemented"
+
+	// MapNode interface of MappingValueNode / MappingNode
 	return false
 }
 
-// MapNode interface of MappingValueNode / MappingNode
 type MapNode interface {
 	MapRange() *MapNodeIter
 }
@@ -1157,26 +804,16 @@ const (
 
 // Next advances the map iterator and reports whether there is another entry.
 // It returns false when the iterator is exhausted.
-func (m *MapNodeIter) Next() bool {
-	m.idx++
-	next := m.idx < len(m.values)
-	return next
-}
+func (m *MapNodeIter) Next() bool { _ = "STUB: not implemented"; return false }
 
 // Key returns the key of the iterator's current map node entry.
-func (m *MapNodeIter) Key() MapKeyNode {
-	return m.values[m.idx].Key
-}
+func (m *MapNodeIter) Key() MapKeyNode { _ = "STUB: not implemented"; return *new(MapKeyNode) }
 
 // Value returns the value of the iterator's current map node entry.
-func (m *MapNodeIter) Value() Node {
-	return m.values[m.idx].Value
-}
+func (m *MapNodeIter) Value() Node { _ = "STUB: not implemented"; return *new(Node) }
 
 // KeyValue returns the MappingValueNode of the iterator's current map node entry.
-func (m *MapNodeIter) KeyValue() *MappingValueNode {
-	return m.values[m.idx]
-}
+func (m *MapNodeIter) KeyValue() *MappingValueNode { _ = "STUB: not implemented"; return nil }
 
 // MappingNode type of mapping node
 type MappingNode struct {
@@ -1188,123 +825,57 @@ type MappingNode struct {
 	FootComment *CommentGroupNode
 }
 
-func (n *MappingNode) startPos() *token.Position {
-	if len(n.Values) == 0 {
-		return n.Start.Position
-	}
-	return n.Values[0].Key.GetToken().Position
-}
+func (n *MappingNode) startPos() *token.Position { _ = "STUB: not implemented"; return nil }
 
 // Merge merge key/value of map.
-func (n *MappingNode) Merge(target *MappingNode) {
-	keyToMapValueMap := map[string]*MappingValueNode{}
-	for _, value := range n.Values {
-		key := value.Key.String()
-		keyToMapValueMap[key] = value
-	}
-	column := n.startPos().Column - target.startPos().Column
-	target.AddColumn(column)
-	for _, value := range target.Values {
-		mapValue, exists := keyToMapValueMap[value.Key.String()]
-		if exists {
-			mapValue.Value = value.Value
-		} else {
-			n.Values = append(n.Values, value)
-		}
-	}
-}
+func (n *MappingNode) Merge(target *MappingNode) { _ = "STUB: not implemented"; return }
 
 // SetIsFlowStyle set value to IsFlowStyle field recursively.
-func (n *MappingNode) SetIsFlowStyle(isFlow bool) {
-	n.IsFlowStyle = isFlow
-	for _, value := range n.Values {
-		value.SetIsFlowStyle(isFlow)
-	}
-}
+func (n *MappingNode) SetIsFlowStyle(isFlow bool) { _ = "STUB: not implemented"; return }
 
 // Read implements (io.Reader).Read
 func (n *MappingNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns MappingType
+		nil
 }
 
-// Type returns MappingType
-func (n *MappingNode) Type() NodeType { return MappingType }
+func (n *MappingNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
+	// GetToken returns token instance
+	return *new(NodeType)
+}
+
 func (n *MappingNode) GetToken() *token.Token {
-	return n.Start
+	_ = "STUB: not implemented"
+
+	// AddColumn add column number to child nodes recursively
+	return nil
 }
 
-// AddColumn add column number to child nodes recursively
-func (n *MappingNode) AddColumn(col int) {
-	n.Start.AddColumn(col)
-	n.End.AddColumn(col)
-	for _, value := range n.Values {
-		value.AddColumn(col)
-	}
-}
+func (n *MappingNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 func (n *MappingNode) flowStyleString(commentMode bool) string {
-	values := []string{}
-	for _, value := range n.Values {
-		values = append(values, strings.TrimLeft(value.String(), " "))
-	}
-	mapText := fmt.Sprintf("{%s}", strings.Join(values, ", "))
-	if commentMode && n.Comment != nil {
-		return addCommentString(mapText, n.Comment)
-	}
-	return mapText
+	_ = "STUB: not implemented"
+	return ""
 }
 
 func (n *MappingNode) blockStyleString(commentMode bool) string {
-	values := []string{}
-	for _, value := range n.Values {
-		values = append(values, value.String())
-	}
-	mapText := strings.Join(values, "\n")
-	if commentMode && n.Comment != nil {
-		value := values[0]
-		var spaceNum int
-		for i := 0; i < len(value); i++ {
-			if value[i] != ' ' {
-				break
-			}
-			spaceNum++
-		}
-		comment := n.Comment.StringWithSpace(spaceNum)
-		return fmt.Sprintf("%s\n%s", comment, mapText)
-	}
-	return mapText
+	_ = "STUB: not implemented"
+	return ""
 }
 
 // String mapping values to text
-func (n *MappingNode) String() string {
-	if len(n.Values) == 0 {
-		if n.Comment != nil {
-			return addCommentString("{}", n.Comment)
-		}
-		return "{}"
-	}
-
-	commentMode := true
-	if n.IsFlowStyle || len(n.Values) == 0 {
-		return n.flowStyleString(commentMode)
-	}
-	return n.blockStyleString(commentMode)
-}
+func (n *MappingNode) String() string { _ = "STUB: not implemented"; return "" }
 
 // MapRange implements MapNode protocol
-func (n *MappingNode) MapRange() *MapNodeIter {
-	return &MapNodeIter{
-		idx:    startRangeIndex,
-		values: n.Values,
-	}
-}
+func (n *MappingNode) MapRange() *MapNodeIter { _ = "STUB: not implemented"; return nil }
 
 // MarshalYAML encodes to a YAML text
-func (n *MappingNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *MappingNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // MappingKeyNode type of tag node
 type MappingKeyNode struct {
@@ -1315,50 +886,40 @@ type MappingKeyNode struct {
 
 // Read implements (io.Reader).Read
 func (n *MappingKeyNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns MappingKeyType
+		nil
 }
 
-// Type returns MappingKeyType
-func (n *MappingKeyNode) Type() NodeType { return MappingKeyType }
+func (n *MappingKeyNode) Type() NodeType {
+	_ = "STUB: not implemented"
+	return *
 
-// GetToken returns token instance
+	// GetToken returns token instance
+	new(NodeType)
+}
+
 func (n *MappingKeyNode) GetToken() *token.Token {
-	return n.Start
+	_ = "STUB: not implemented"
+
+	// AddColumn add column number to child nodes recursively
+	return nil
 }
 
-// AddColumn add column number to child nodes recursively
-func (n *MappingKeyNode) AddColumn(col int) {
-	n.Start.AddColumn(col)
-	if n.Value != nil {
-		n.Value.AddColumn(col)
-	}
-}
+func (n *MappingKeyNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // String tag to text
-func (n *MappingKeyNode) String() string {
-	return n.stringWithoutComment()
-}
+func (n *MappingKeyNode) String() string { _ = "STUB: not implemented"; return "" }
 
-func (n *MappingKeyNode) stringWithoutComment() string {
-	return fmt.Sprintf("%s %s", n.Start.Value, n.Value.String())
-}
+func (n *MappingKeyNode) stringWithoutComment() string { _ = "STUB: not implemented"; return "" }
 
 // MarshalYAML encodes to a YAML text
-func (n *MappingKeyNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *MappingKeyNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // IsMergeKey returns whether it is a MergeKey node.
-func (n *MappingKeyNode) IsMergeKey() bool {
-	if n.Value == nil {
-		return false
-	}
-	key, ok := n.Value.(MapKeyNode)
-	if !ok {
-		return false
-	}
-	return key.IsMergeKey()
-}
+func (n *MappingKeyNode) IsMergeKey() bool { _ = "STUB: not implemented"; return false }
 
 // MappingValueNode type of mapping value
 type MappingValueNode struct {
@@ -1372,149 +933,57 @@ type MappingValueNode struct {
 }
 
 // Replace replace value node.
-func (n *MappingValueNode) Replace(value Node) error {
-	column := n.Value.GetToken().Position.Column - value.GetToken().Position.Column
-	value.AddColumn(column)
-	n.Value = value
-	return nil
-}
+func (n *MappingValueNode) Replace(value Node) error { _ = "STUB: not implemented"; return nil }
 
 // Read implements (io.Reader).Read
 func (n *MappingValueNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns MappingValueType
+		nil
 }
 
-// Type returns MappingValueType
-func (n *MappingValueNode) Type() NodeType { return MappingValueType }
+func (n *MappingValueNode) Type() NodeType {
+	_ = "STUB: not implemented"
+	return *
 
-// GetToken returns token instance
+	// GetToken returns token instance
+	new(NodeType)
+}
+
 func (n *MappingValueNode) GetToken() *token.Token {
-	return n.Start
+	_ = "STUB: not implemented"
+
+	// AddColumn add column number to child nodes recursively
+	return nil
 }
 
-// AddColumn add column number to child nodes recursively
-func (n *MappingValueNode) AddColumn(col int) {
-	n.Start.AddColumn(col)
-	if n.Key != nil {
-		n.Key.AddColumn(col)
-	}
-	if n.Value != nil {
-		n.Value.AddColumn(col)
-	}
-}
+func (n *MappingValueNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // SetIsFlowStyle set value to IsFlowStyle field recursively.
-func (n *MappingValueNode) SetIsFlowStyle(isFlow bool) {
-	n.IsFlowStyle = isFlow
-	switch value := n.Value.(type) {
-	case *MappingNode:
-		value.SetIsFlowStyle(isFlow)
-	case *MappingValueNode:
-		value.SetIsFlowStyle(isFlow)
-	case *SequenceNode:
-		value.SetIsFlowStyle(isFlow)
-	}
-}
+func (n *MappingValueNode) SetIsFlowStyle(isFlow bool) { _ = "STUB: not implemented"; return }
 
 // String mapping value to text
-func (n *MappingValueNode) String() string {
-	var text string
-	if n.Comment != nil {
-		text = fmt.Sprintf(
-			"%s\n%s",
-			n.Comment.StringWithSpace(n.Key.GetToken().Position.Column-1),
-			n.toString(),
-		)
-	} else {
-		text = n.toString()
-	}
-	if n.FootComment != nil {
-		text += fmt.Sprintf("\n%s", n.FootComment.StringWithSpace(n.Key.GetToken().Position.Column-1))
-	}
-	return text
-}
+func (n *MappingValueNode) String() string { _ = "STUB: not implemented"; return "" }
 
-func (n *MappingValueNode) toString() string {
-	space := strings.Repeat(" ", n.Key.GetToken().Position.Column-1)
-	if checkLineBreak(n.Key.GetToken()) {
-		space = fmt.Sprintf("%s%s", "\n", space)
-	}
-	keyIndentLevel := n.Key.GetToken().Position.IndentLevel
-	valueIndentLevel := n.Value.GetToken().Position.IndentLevel
-	keyComment := n.Key.GetComment()
-	if _, ok := n.Value.(ScalarNode); ok {
-		value := n.Value.String()
-		if value == "" {
-			// implicit null value.
-			return fmt.Sprintf("%s%s:", space, n.Key.String())
-		}
-		return fmt.Sprintf("%s%s: %s", space, n.Key.String(), value)
-	} else if keyIndentLevel < valueIndentLevel && !n.IsFlowStyle {
-		valueStr := n.Value.String()
-		// For flow-style values indented on the next line, we need to add the proper indentation
-		if m, ok := n.Value.(*MappingNode); ok && m.IsFlowStyle {
-			valueIndent := strings.Repeat(" ", n.Value.GetToken().Position.Column-1)
-			valueStr = valueIndent + valueStr
-		} else if s, ok := n.Value.(*SequenceNode); ok && s.IsFlowStyle {
-			valueIndent := strings.Repeat(" ", n.Value.GetToken().Position.Column-1)
-			valueStr = valueIndent + valueStr
-		}
-		if keyComment != nil {
-			return fmt.Sprintf(
-				"%s%s: %s\n%s",
-				space,
-				n.Key.stringWithoutComment(),
-				keyComment.String(),
-				valueStr,
-			)
-		}
-		return fmt.Sprintf("%s%s:\n%s", space, n.Key.String(), valueStr)
-	} else if m, ok := n.Value.(*MappingNode); ok && (m.IsFlowStyle || len(m.Values) == 0) {
-		return fmt.Sprintf("%s%s: %s", space, n.Key.String(), n.Value.String())
-	} else if s, ok := n.Value.(*SequenceNode); ok && (s.IsFlowStyle || len(s.Values) == 0) {
-		return fmt.Sprintf("%s%s: %s", space, n.Key.String(), n.Value.String())
-	} else if _, ok := n.Value.(*AnchorNode); ok {
-		return fmt.Sprintf("%s%s: %s", space, n.Key.String(), n.Value.String())
-	} else if _, ok := n.Value.(*AliasNode); ok {
-		return fmt.Sprintf("%s%s: %s", space, n.Key.String(), n.Value.String())
-	} else if _, ok := n.Value.(*TagNode); ok {
-		return fmt.Sprintf("%s%s: %s", space, n.Key.String(), n.Value.String())
-	}
+func (n *MappingValueNode) toString() string { _ = "STUB: not implemented"; return "" }
 
-	if keyComment != nil {
-		return fmt.Sprintf(
-			"%s%s: %s\n%s",
-			space,
-			n.Key.stringWithoutComment(),
-			keyComment.String(),
-			n.Value.String(),
-		)
-	}
-	if m, ok := n.Value.(*MappingNode); ok && m.Comment != nil {
-		return fmt.Sprintf(
-			"%s%s: %s",
-			space,
-			n.Key.String(),
-			strings.TrimLeft(n.Value.String(), " "),
-		)
-	}
-	return fmt.Sprintf("%s%s:\n%s", space, n.Key.String(), n.Value.String())
-}
+// implicit null value.
+
+// For flow-style values indented on the next line, we need to add the proper indentation
 
 // MapRange implements MapNode protocol
-func (n *MappingValueNode) MapRange() *MapNodeIter {
-	return &MapNodeIter{
-		idx:    startRangeIndex,
-		values: []*MappingValueNode{n},
-	}
-}
+func (n *MappingValueNode) MapRange() *MapNodeIter { _ = "STUB: not implemented"; return nil }
 
 // MarshalYAML encodes to a YAML text
 func (n *MappingValueNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
+	_ = "STUB: not implemented"
+	return nil, nil
+
+	// ArrayNode interface of SequenceNode
 }
 
-// ArrayNode interface of SequenceNode
 type ArrayNode interface {
 	ArrayRange() *ArrayNodeIter
 }
@@ -1527,21 +996,18 @@ type ArrayNodeIter struct {
 
 // Next advances the array iterator and reports whether there is another entry.
 // It returns false when the iterator is exhausted.
-func (m *ArrayNodeIter) Next() bool {
-	m.idx++
-	next := m.idx < len(m.values)
-	return next
-}
+func (m *ArrayNodeIter) Next() bool { _ = "STUB: not implemented"; return false }
 
 // Value returns the value of the iterator's current array entry.
 func (m *ArrayNodeIter) Value() Node {
-	return m.values[m.idx]
+	_ = "STUB: not implemented"
+	return *
+
+	// Len returns length of array
+	new(Node)
 }
 
-// Len returns length of array
-func (m *ArrayNodeIter) Len() int {
-	return len(m.values)
-}
+func (m *ArrayNodeIter) Len() int { _ = "STUB: not implemented"; return 0 }
 
 // SequenceNode type of sequence node
 type SequenceNode struct {
@@ -1556,150 +1022,55 @@ type SequenceNode struct {
 }
 
 // Replace replace value node.
-func (n *SequenceNode) Replace(idx int, value Node) error {
-	if len(n.Values) <= idx {
-		return fmt.Errorf(
-			"invalid index for sequence: sequence length is %d, but specified %d index",
-			len(n.Values), idx,
-		)
-	}
-	column := n.Values[idx].GetToken().Position.Column - value.GetToken().Position.Column
-	value.AddColumn(column)
-	n.Values[idx] = value
-	return nil
-}
+func (n *SequenceNode) Replace(idx int, value Node) error { _ = "STUB: not implemented"; return nil }
 
 // Merge merge sequence value.
-func (n *SequenceNode) Merge(target *SequenceNode) {
-	column := n.Start.Position.Column - target.Start.Position.Column
-	target.AddColumn(column)
-	n.Values = append(n.Values, target.Values...)
-	if len(target.ValueHeadComments) == 0 {
-		n.ValueHeadComments = append(n.ValueHeadComments, make([]*CommentGroupNode, len(target.Values))...)
-		return
-	}
-	n.ValueHeadComments = append(n.ValueHeadComments, target.ValueHeadComments...)
-}
+func (n *SequenceNode) Merge(target *SequenceNode) { _ = "STUB: not implemented"; return }
 
 // SetIsFlowStyle set value to IsFlowStyle field recursively.
-func (n *SequenceNode) SetIsFlowStyle(isFlow bool) {
-	n.IsFlowStyle = isFlow
-	for _, value := range n.Values {
-		switch value := value.(type) {
-		case *MappingNode:
-			value.SetIsFlowStyle(isFlow)
-		case *MappingValueNode:
-			value.SetIsFlowStyle(isFlow)
-		case *SequenceNode:
-			value.SetIsFlowStyle(isFlow)
-		}
-	}
-}
+func (n *SequenceNode) SetIsFlowStyle(isFlow bool) { _ = "STUB: not implemented"; return }
 
 // Read implements (io.Reader).Read
 func (n *SequenceNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns SequenceType
+		nil
 }
 
-// Type returns SequenceType
-func (n *SequenceNode) Type() NodeType { return SequenceType }
+func (n *SequenceNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
+	// GetToken returns token instance
+	return *new(NodeType)
+}
+
 func (n *SequenceNode) GetToken() *token.Token {
-	return n.Start
+	_ = "STUB: not implemented"
+
+	// AddColumn add column number to child nodes recursively
+	return nil
 }
 
-// AddColumn add column number to child nodes recursively
-func (n *SequenceNode) AddColumn(col int) {
-	n.Start.AddColumn(col)
-	n.End.AddColumn(col)
-	for _, value := range n.Values {
-		value.AddColumn(col)
-	}
-}
+func (n *SequenceNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
-func (n *SequenceNode) flowStyleString() string {
-	values := []string{}
-	for _, value := range n.Values {
-		values = append(values, value.String())
-	}
-	seqText := fmt.Sprintf("[%s]", strings.Join(values, ", "))
-	if n.Comment != nil {
-		return addCommentString(seqText, n.Comment)
-	}
-	return seqText
-}
+func (n *SequenceNode) flowStyleString() string { _ = "STUB: not implemented"; return "" }
 
-func (n *SequenceNode) blockStyleString() string {
-	space := strings.Repeat(" ", n.Start.Position.Column-1)
-	values := []string{}
-	if n.Comment != nil {
-		values = append(values, n.Comment.StringWithSpace(n.Start.Position.Column-1))
-	}
+func (n *SequenceNode) blockStyleString() string { _ = "STUB: not implemented"; return "" }
 
-	for idx, value := range n.Values {
-		if value == nil {
-			continue
-		}
-		valueStr := value.String()
-		newLinePrefix := ""
-		if strings.HasPrefix(valueStr, "\n") {
-			valueStr = valueStr[1:]
-			newLinePrefix = "\n"
-		}
-		splittedValues := strings.Split(valueStr, "\n")
-		trimmedFirstValue := strings.TrimLeft(splittedValues[0], " ")
-		diffLength := len(splittedValues[0]) - len(trimmedFirstValue)
-		if len(splittedValues) > 1 && value.Type() == StringType || value.Type() == LiteralType {
-			// If multi-line string, the space characters for indent have already been added, so delete them.
-			prefix := space + "  "
-			for i := 1; i < len(splittedValues); i++ {
-				splittedValues[i] = strings.TrimPrefix(splittedValues[i], prefix)
-			}
-		}
-		newValues := []string{trimmedFirstValue}
-		for i := 1; i < len(splittedValues); i++ {
-			if len(splittedValues[i]) <= diffLength {
-				// this line is \n or white space only
-				newValues = append(newValues, "")
-				continue
-			}
-			trimmed := splittedValues[i][diffLength:]
-			newValues = append(newValues, fmt.Sprintf("%s  %s", space, trimmed))
-		}
-		newValue := strings.Join(newValues, "\n")
-		if len(n.ValueHeadComments) == len(n.Values) && n.ValueHeadComments[idx] != nil {
-			values = append(values, fmt.Sprintf("%s%s", newLinePrefix, n.ValueHeadComments[idx].StringWithSpace(n.Start.Position.Column-1)))
-			newLinePrefix = ""
-		}
-		values = append(values, fmt.Sprintf("%s%s- %s", newLinePrefix, space, newValue))
-	}
-	if n.FootComment != nil {
-		values = append(values, n.FootComment.StringWithSpace(n.Start.Position.Column-1))
-	}
-	return strings.Join(values, "\n")
-}
+// If multi-line string, the space characters for indent have already been added, so delete them.
+
+// this line is \n or white space only
 
 // String sequence to text
-func (n *SequenceNode) String() string {
-	if n.IsFlowStyle || len(n.Values) == 0 {
-		return n.flowStyleString()
-	}
-	return n.blockStyleString()
-}
+func (n *SequenceNode) String() string { _ = "STUB: not implemented"; return "" }
 
 // ArrayRange implements ArrayNode protocol
-func (n *SequenceNode) ArrayRange() *ArrayNodeIter {
-	return &ArrayNodeIter{
-		idx:    startRangeIndex,
-		values: n.Values,
-	}
-}
+func (n *SequenceNode) ArrayRange() *ArrayNodeIter { _ = "STUB: not implemented"; return nil }
 
 // MarshalYAML encodes to a YAML text
-func (n *SequenceNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *SequenceNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // SequenceEntryNode is the sequence entry.
 type SequenceEntryNode struct {
@@ -1712,59 +1083,62 @@ type SequenceEntryNode struct {
 
 // String node to text
 func (n *SequenceEntryNode) String() string {
-	return "" // TODO
+	_ = "STUB: not implemented"
+	// TODO
+
+	// GetToken returns token instance
+	return ""
 }
 
-// GetToken returns token instance
 func (n *SequenceEntryNode) GetToken() *token.Token {
-	return n.Start
+	_ = "STUB: not implemented"
+
+	// Type returns type of node
+	return nil
 }
 
-// Type returns type of node
 func (n *SequenceEntryNode) Type() NodeType {
-	return SequenceEntryType
+	_ = "STUB: not implemented"
+	return *
+
+	// AddColumn add column number to child nodes recursively
+	new(NodeType)
 }
 
-// AddColumn add column number to child nodes recursively
-func (n *SequenceEntryNode) AddColumn(col int) {
-	n.Start.AddColumn(col)
-}
+func (n *SequenceEntryNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // SetComment set line comment.
 func (n *SequenceEntryNode) SetComment(cm *CommentGroupNode) error {
-	n.LineComment = cm
+	_ = "STUB: not implemented"
 	return nil
 }
 
 // Comment returns comment token instance
-func (n *SequenceEntryNode) GetComment() *CommentGroupNode {
-	return n.LineComment
-}
+func (n *SequenceEntryNode) GetComment() *CommentGroupNode { _ = "STUB: not implemented"; return nil }
 
 // MarshalYAML
 func (n *SequenceEntryNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 func (n *SequenceEntryNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// SequenceEntry creates SequenceEntryNode instance.
+		nil
 }
 
-// SequenceEntry creates SequenceEntryNode instance.
 func SequenceEntry(start *token.Token, value Node, headComment *CommentGroupNode) *SequenceEntryNode {
-	return &SequenceEntryNode{
-		BaseNode:    &BaseNode{},
-		HeadComment: headComment,
-		Start:       start,
-		Value:       value,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // SequenceMergeValue creates SequenceMergeValueNode instance.
 func SequenceMergeValue(values ...MapNode) *SequenceMergeValueNode {
-	return &SequenceMergeValueNode{
-		values: values,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // SequenceMergeValueNode is used to convert the Sequence node specified for the merge key into a MapNode format.
@@ -1773,14 +1147,7 @@ type SequenceMergeValueNode struct {
 }
 
 // MapRange returns MapNodeIter instance.
-func (n *SequenceMergeValueNode) MapRange() *MapNodeIter {
-	ret := &MapNodeIter{idx: startRangeIndex}
-	for _, value := range n.values {
-		iter := value.MapRange()
-		ret.values = append(ret.values, iter.values...)
-	}
-	return ret
-}
+func (n *SequenceMergeValueNode) MapRange() *MapNodeIter { _ = "STUB: not implemented"; return nil }
 
 // AnchorNode type of anchor node
 type AnchorNode struct {
@@ -1790,82 +1157,43 @@ type AnchorNode struct {
 	Value Node
 }
 
-func (n *AnchorNode) stringWithoutComment() string {
-	return n.Value.String()
-}
+func (n *AnchorNode) stringWithoutComment() string { _ = "STUB: not implemented"; return "" }
 
-func (n *AnchorNode) SetName(name string) error {
-	if n.Name == nil {
-		return ErrInvalidAnchorName
-	}
-	s, ok := n.Name.(*StringNode)
-	if !ok {
-		return ErrInvalidAnchorName
-	}
-	s.Value = name
-	return nil
-}
+func (n *AnchorNode) SetName(name string) error { _ = "STUB: not implemented"; return nil }
 
 // Read implements (io.Reader).Read
 func (n *AnchorNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns AnchorType
+		nil
 }
 
-// Type returns AnchorType
-func (n *AnchorNode) Type() NodeType { return AnchorType }
+func (n *AnchorNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
-func (n *AnchorNode) GetToken() *token.Token {
-	return n.Start
+	// GetToken returns token instance
+	return *new(NodeType)
 }
 
-func (n *AnchorNode) GetValue() any {
-	return n.Value.GetToken().Value
-}
+func (n *AnchorNode) GetToken() *token.Token { _ = "STUB: not implemented"; return nil }
+
+func (n *AnchorNode) GetValue() any { _ = "STUB: not implemented"; return *new(any) }
 
 // AddColumn add column number to child nodes recursively
-func (n *AnchorNode) AddColumn(col int) {
-	n.Start.AddColumn(col)
-	if n.Name != nil {
-		n.Name.AddColumn(col)
-	}
-	if n.Value != nil {
-		n.Value.AddColumn(col)
-	}
-}
+func (n *AnchorNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // String anchor to text
-func (n *AnchorNode) String() string {
-	anchor := "&" + n.Name.String()
-	value := n.Value.String()
-	if s, ok := n.Value.(*SequenceNode); ok && !s.IsFlowStyle {
-		return fmt.Sprintf("%s\n%s", anchor, value)
-	} else if m, ok := n.Value.(*MappingNode); ok && !m.IsFlowStyle {
-		return fmt.Sprintf("%s\n%s", anchor, value)
-	}
-	if value == "" {
-		// implicit null value.
-		return anchor
-	}
-	return fmt.Sprintf("%s %s", anchor, value)
-}
+func (n *AnchorNode) String() string { _ = "STUB: not implemented"; return "" }
+
+// implicit null value.
 
 // MarshalYAML encodes to a YAML text
-func (n *AnchorNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *AnchorNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // IsMergeKey returns whether it is a MergeKey node.
-func (n *AnchorNode) IsMergeKey() bool {
-	if n.Value == nil {
-		return false
-	}
-	key, ok := n.Value.(MapKeyNode)
-	if !ok {
-		return false
-	}
-	return key.IsMergeKey()
-}
+func (n *AnchorNode) IsMergeKey() bool { _ = "STUB: not implemented"; return false }
 
 // AliasNode type of alias node
 type AliasNode struct {
@@ -1874,63 +1202,47 @@ type AliasNode struct {
 	Value Node
 }
 
-func (n *AliasNode) stringWithoutComment() string {
-	return n.Value.String()
-}
+func (n *AliasNode) stringWithoutComment() string { _ = "STUB: not implemented"; return "" }
 
-func (n *AliasNode) SetName(name string) error {
-	if n.Value == nil {
-		return ErrInvalidAliasName
-	}
-	s, ok := n.Value.(*StringNode)
-	if !ok {
-		return ErrInvalidAliasName
-	}
-	s.Value = name
-	return nil
-}
+func (n *AliasNode) SetName(name string) error { _ = "STUB: not implemented"; return nil }
 
 // Read implements (io.Reader).Read
 func (n *AliasNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns AliasType
+		nil
 }
 
-// Type returns AliasType
-func (n *AliasNode) Type() NodeType { return AliasType }
+func (n *AliasNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
-func (n *AliasNode) GetToken() *token.Token {
-	return n.Start
+	// GetToken returns token instance
+	return *new(NodeType)
 }
 
-func (n *AliasNode) GetValue() any {
-	return n.Value.GetToken().Value
-}
+func (n *AliasNode) GetToken() *token.Token { _ = "STUB: not implemented"; return nil }
+
+func (n *AliasNode) GetValue() any { _ = "STUB: not implemented"; return *new(any) }
 
 // AddColumn add column number to child nodes recursively
-func (n *AliasNode) AddColumn(col int) {
-	n.Start.AddColumn(col)
-	if n.Value != nil {
-		n.Value.AddColumn(col)
-	}
-}
+func (n *AliasNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // String alias to text
-func (n *AliasNode) String() string {
-	return fmt.Sprintf("*%s", n.Value.String())
-}
+func (n *AliasNode) String() string { _ = "STUB: not implemented"; return "" }
 
 // MarshalYAML encodes to a YAML text
-func (n *AliasNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *AliasNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // IsMergeKey returns whether it is a MergeKey node.
 func (n *AliasNode) IsMergeKey() bool {
+	_ = "STUB: not implemented"
+
+	// DirectiveNode type of directive node
 	return false
 }
 
-// DirectiveNode type of directive node
 type DirectiveNode struct {
 	*BaseNode
 	// Start is '%' token.
@@ -1943,40 +1255,35 @@ type DirectiveNode struct {
 
 // Read implements (io.Reader).Read
 func (n *DirectiveNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns DirectiveType
+		nil
 }
 
-// Type returns DirectiveType
-func (n *DirectiveNode) Type() NodeType { return DirectiveType }
+func (n *DirectiveNode) Type() NodeType {
+	_ = "STUB: not implemented"
+	return *
 
-// GetToken returns token instance
+	// GetToken returns token instance
+	new(NodeType)
+}
+
 func (n *DirectiveNode) GetToken() *token.Token {
-	return n.Start
+	_ = "STUB: not implemented"
+
+	// AddColumn add column number to child nodes recursively
+	return nil
 }
 
-// AddColumn add column number to child nodes recursively
-func (n *DirectiveNode) AddColumn(col int) {
-	if n.Name != nil {
-		n.Name.AddColumn(col)
-	}
-	for _, value := range n.Values {
-		value.AddColumn(col)
-	}
-}
+func (n *DirectiveNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // String directive to text
-func (n *DirectiveNode) String() string {
-	values := make([]string, 0, len(n.Values))
-	for _, val := range n.Values {
-		values = append(values, val.String())
-	}
-	return strings.Join(append([]string{"%" + n.Name.String()}, values...), " ")
-}
+func (n *DirectiveNode) String() string { _ = "STUB: not implemented"; return "" }
 
 // MarshalYAML encodes to a YAML text
-func (n *DirectiveNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *DirectiveNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // TagNode type of tag node
 type TagNode struct {
@@ -1986,75 +1293,45 @@ type TagNode struct {
 	Value     Node
 }
 
-func (n *TagNode) GetValue() any {
-	scalar, ok := n.Value.(ScalarNode)
-	if !ok {
-		return nil
-	}
-	return scalar.GetValue()
-}
+func (n *TagNode) GetValue() any { _ = "STUB: not implemented"; return *new(any) }
 
-func (n *TagNode) stringWithoutComment() string {
-	return n.Value.String()
-}
+func (n *TagNode) stringWithoutComment() string { _ = "STUB: not implemented"; return "" }
 
 // Read implements (io.Reader).Read
 func (n *TagNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns TagType
+		nil
 }
 
-// Type returns TagType
-func (n *TagNode) Type() NodeType { return TagType }
+func (n *TagNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
+	// GetToken returns token instance
+	return *new(NodeType)
+}
+
 func (n *TagNode) GetToken() *token.Token {
-	return n.Start
+	_ = "STUB: not implemented"
+
+	// AddColumn add column number to child nodes recursively
+	return nil
 }
 
-// AddColumn add column number to child nodes recursively
-func (n *TagNode) AddColumn(col int) {
-	n.Start.AddColumn(col)
-	if n.Value != nil {
-		n.Value.AddColumn(col)
-	}
-}
+func (n *TagNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // String tag to text
-func (n *TagNode) String() string {
-	value := n.Value.String()
-	if s, ok := n.Value.(*SequenceNode); ok && !s.IsFlowStyle {
-		return fmt.Sprintf("%s\n%s", n.Start.Value, value)
-	} else if m, ok := n.Value.(*MappingNode); ok && !m.IsFlowStyle {
-		return fmt.Sprintf("%s\n%s", n.Start.Value, value)
-	}
-
-	return fmt.Sprintf("%s %s", n.Start.Value, value)
-}
+func (n *TagNode) String() string { _ = "STUB: not implemented"; return "" }
 
 // MarshalYAML encodes to a YAML text
-func (n *TagNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *TagNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // IsMergeKey returns whether it is a MergeKey node.
-func (n *TagNode) IsMergeKey() bool {
-	if n.Value == nil {
-		return false
-	}
-	key, ok := n.Value.(MapKeyNode)
-	if !ok {
-		return false
-	}
-	return key.IsMergeKey()
-}
+func (n *TagNode) IsMergeKey() bool { _ = "STUB: not implemented"; return false }
 
-func (n *TagNode) ArrayRange() *ArrayNodeIter {
-	arr, ok := n.Value.(ArrayNode)
-	if !ok {
-		return nil
-	}
-	return arr.ArrayRange()
-}
+func (n *TagNode) ArrayRange() *ArrayNodeIter { _ = "STUB: not implemented"; return nil }
 
 // CommentNode type of comment node
 type CommentNode struct {
@@ -2064,32 +1341,34 @@ type CommentNode struct {
 
 // Read implements (io.Reader).Read
 func (n *CommentNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns TagType
+		nil
 }
 
-// Type returns TagType
-func (n *CommentNode) Type() NodeType { return CommentType }
+func (n *CommentNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
-func (n *CommentNode) GetToken() *token.Token { return n.Token }
-
-// AddColumn add column number to child nodes recursively
-func (n *CommentNode) AddColumn(col int) {
-	if n.Token == nil {
-		return
-	}
-	n.Token.AddColumn(col)
+	// GetToken returns token instance
+	return *new(NodeType)
 }
+
+func (n *CommentNode) GetToken() *token.Token {
+	_ = "STUB: not implemented"
+
+	// AddColumn add column number to child nodes recursively
+	return nil
+}
+
+func (n *CommentNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // String comment to text
-func (n *CommentNode) String() string {
-	return fmt.Sprintf("#%s", n.Token.Value)
-}
+func (n *CommentNode) String() string { _ = "STUB: not implemented"; return "" }
 
 // MarshalYAML encodes to a YAML text
-func (n *CommentNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
-}
+func (n *CommentNode) MarshalYAML() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // CommentGroupNode type of comment node
 type CommentGroupNode struct {
@@ -2099,57 +1378,40 @@ type CommentGroupNode struct {
 
 // Read implements (io.Reader).Read
 func (n *CommentGroupNode) Read(p []byte) (int, error) {
-	return readNode(p, n)
+	_ = "STUB: not implemented"
+	return 0,
+
+		// Type returns TagType
+		nil
 }
 
-// Type returns TagType
-func (n *CommentGroupNode) Type() NodeType { return CommentType }
+func (n *CommentGroupNode) Type() NodeType {
+	_ = "STUB: not implemented"
 
-// GetToken returns token instance
-func (n *CommentGroupNode) GetToken() *token.Token {
-	if len(n.Comments) > 0 {
-		return n.Comments[0].Token
-	}
-	return nil
+	// GetToken returns token instance
+	return *new(NodeType)
 }
+
+func (n *CommentGroupNode) GetToken() *token.Token { _ = "STUB: not implemented"; return nil }
 
 // AddColumn add column number to child nodes recursively
-func (n *CommentGroupNode) AddColumn(col int) {
-	for _, comment := range n.Comments {
-		comment.AddColumn(col)
-	}
-}
+func (n *CommentGroupNode) AddColumn(col int) { _ = "STUB: not implemented"; return }
 
 // String comment to text
-func (n *CommentGroupNode) String() string {
-	values := []string{}
-	for _, comment := range n.Comments {
-		values = append(values, comment.String())
-	}
-	return strings.Join(values, "\n")
-}
+func (n *CommentGroupNode) String() string { _ = "STUB: not implemented"; return "" }
 
-func (n *CommentGroupNode) StringWithSpace(col int) string {
-	values := []string{}
-	space := strings.Repeat(" ", col)
-	for _, comment := range n.Comments {
-		space := space
-		if checkLineBreak(comment.Token) {
-			space = fmt.Sprintf("%s%s", "\n", space)
-		}
-		values = append(values, space+comment.String())
-	}
-	return strings.Join(values, "\n")
-}
+func (n *CommentGroupNode) StringWithSpace(col int) string { _ = "STUB: not implemented"; return "" }
 
 // MarshalYAML encodes to a YAML text
 func (n *CommentGroupNode) MarshalYAML() ([]byte, error) {
-	return []byte(n.String()), nil
+	_ = "STUB: not implemented"
+	return nil, nil
+
+	// Visitor has Visit method that is invokded for each node encountered by Walk.
+	// If the result visitor w is not nil, Walk visits each of the children of node with the visitor w,
+	// followed by a call of w.Visit(nil).
 }
 
-// Visitor has Visit method that is invokded for each node encountered by Walk.
-// If the result visitor w is not nil, Walk visits each of the children of node with the visitor w,
-// followed by a call of w.Visit(nil).
 type Visitor interface {
 	Visit(Node) Visitor
 }
@@ -2158,224 +1420,38 @@ type Visitor interface {
 // If the visitor w returned by v.Visit(node) is not nil,
 // Walk is invoked recursively with visitor w for each of the non-nil children of node,
 // followed by a call of w.Visit(nil).
-func Walk(v Visitor, node Node) {
-	if v = v.Visit(node); v == nil {
-		return
-	}
+func Walk(v Visitor, node Node) { _ = "STUB: not implemented"; return }
 
-	switch n := node.(type) {
-	case *CommentNode:
-	case *NullNode:
-		walkComment(v, n.BaseNode)
-	case *IntegerNode:
-		walkComment(v, n.BaseNode)
-	case *FloatNode:
-		walkComment(v, n.BaseNode)
-	case *StringNode:
-		walkComment(v, n.BaseNode)
-	case *MergeKeyNode:
-		walkComment(v, n.BaseNode)
-	case *BoolNode:
-		walkComment(v, n.BaseNode)
-	case *InfinityNode:
-		walkComment(v, n.BaseNode)
-	case *NanNode:
-		walkComment(v, n.BaseNode)
-	case *LiteralNode:
-		walkComment(v, n.BaseNode)
-		Walk(v, n.Value)
-	case *DirectiveNode:
-		walkComment(v, n.BaseNode)
-		Walk(v, n.Name)
-		for _, value := range n.Values {
-			Walk(v, value)
-		}
-	case *TagNode:
-		walkComment(v, n.BaseNode)
-		Walk(v, n.Value)
-	case *DocumentNode:
-		walkComment(v, n.BaseNode)
-		Walk(v, n.Body)
-	case *MappingNode:
-		walkComment(v, n.BaseNode)
-		for _, value := range n.Values {
-			Walk(v, value)
-		}
-	case *MappingKeyNode:
-		walkComment(v, n.BaseNode)
-		Walk(v, n.Value)
-	case *MappingValueNode:
-		walkComment(v, n.BaseNode)
-		Walk(v, n.Key)
-		Walk(v, n.Value)
-	case *SequenceNode:
-		walkComment(v, n.BaseNode)
-		for _, value := range n.Values {
-			Walk(v, value)
-		}
-	case *AnchorNode:
-		walkComment(v, n.BaseNode)
-		Walk(v, n.Name)
-		Walk(v, n.Value)
-	case *AliasNode:
-		walkComment(v, n.BaseNode)
-		Walk(v, n.Value)
-	}
-}
-
-func walkComment(v Visitor, base *BaseNode) {
-	if base == nil {
-		return
-	}
-	if base.Comment == nil {
-		return
-	}
-	Walk(v, base.Comment)
-}
+func walkComment(v Visitor, base *BaseNode) { _ = "STUB: not implemented"; return }
 
 type filterWalker struct {
 	typ     NodeType
 	results []Node
 }
 
-func (v *filterWalker) Visit(n Node) Visitor {
-	if v.typ == n.Type() {
-		v.results = append(v.results, n)
-	}
-	return v
-}
+func (v *filterWalker) Visit(n Node) Visitor { _ = "STUB: not implemented"; return *new(Visitor) }
 
 type parentFinder struct {
 	target Node
 }
 
-func (f *parentFinder) walk(parent, node Node) Node {
-	if f.target == node {
-		return parent
-	}
-	switch n := node.(type) {
-	case *CommentNode:
-		return nil
-	case *NullNode:
-		return nil
-	case *IntegerNode:
-		return nil
-	case *FloatNode:
-		return nil
-	case *StringNode:
-		return nil
-	case *MergeKeyNode:
-		return nil
-	case *BoolNode:
-		return nil
-	case *InfinityNode:
-		return nil
-	case *NanNode:
-		return nil
-	case *LiteralNode:
-		return f.walk(node, n.Value)
-	case *DirectiveNode:
-		if found := f.walk(node, n.Name); found != nil {
-			return found
-		}
-		for _, value := range n.Values {
-			if found := f.walk(node, value); found != nil {
-				return found
-			}
-		}
-	case *TagNode:
-		return f.walk(node, n.Value)
-	case *DocumentNode:
-		return f.walk(node, n.Body)
-	case *MappingNode:
-		for _, value := range n.Values {
-			if found := f.walk(node, value); found != nil {
-				return found
-			}
-		}
-	case *MappingKeyNode:
-		return f.walk(node, n.Value)
-	case *MappingValueNode:
-		if found := f.walk(node, n.Key); found != nil {
-			return found
-		}
-		return f.walk(node, n.Value)
-	case *SequenceNode:
-		for _, value := range n.Values {
-			if found := f.walk(node, value); found != nil {
-				return found
-			}
-		}
-	case *AnchorNode:
-		if found := f.walk(node, n.Name); found != nil {
-			return found
-		}
-		return f.walk(node, n.Value)
-	case *AliasNode:
-		return f.walk(node, n.Value)
-	}
-	return nil
-}
+func (f *parentFinder) walk(parent, node Node) Node { _ = "STUB: not implemented"; return *new(Node) }
 
 // Parent get parent node from child node.
-func Parent(root, child Node) Node {
-	finder := &parentFinder{target: child}
-	return finder.walk(root, root)
-}
+func Parent(root, child Node) Node { _ = "STUB: not implemented"; return *new(Node) }
 
 // Filter returns a list of nodes that match the given type.
-func Filter(typ NodeType, node Node) []Node {
-	walker := &filterWalker{typ: typ}
-	Walk(walker, node)
-	return walker.results
-}
+func Filter(typ NodeType, node Node) []Node { _ = "STUB: not implemented"; return nil }
 
 // FilterFile returns a list of nodes that match the given type.
-func FilterFile(typ NodeType, file *File) []Node {
-	results := []Node{}
-	for _, doc := range file.Docs {
-		walker := &filterWalker{typ: typ}
-		Walk(walker, doc)
-		results = append(results, walker.results...)
-	}
-	return results
-}
+func FilterFile(typ NodeType, file *File) []Node { _ = "STUB: not implemented"; return nil }
 
 type ErrInvalidMergeType struct {
 	dst Node
 	src Node
 }
 
-func (e *ErrInvalidMergeType) Error() string {
-	return fmt.Sprintf("cannot merge %s into %s", e.src.Type(), e.dst.Type())
-}
+func (e *ErrInvalidMergeType) Error() string { _ = "STUB: not implemented"; return "" }
 
 // Merge merge document, map, sequence node.
-func Merge(dst Node, src Node) error {
-	if doc, ok := src.(*DocumentNode); ok {
-		src = doc.Body
-	}
-	err := &ErrInvalidMergeType{dst: dst, src: src}
-	switch dst.Type() {
-	case DocumentType:
-		node, _ := dst.(*DocumentNode)
-		return Merge(node.Body, src)
-	case MappingType:
-		node, _ := dst.(*MappingNode)
-		target, ok := src.(*MappingNode)
-		if !ok {
-			return err
-		}
-		node.Merge(target)
-		return nil
-	case SequenceType:
-		node, _ := dst.(*SequenceNode)
-		target, ok := src.(*SequenceNode)
-		if !ok {
-			return err
-		}
-		node.Merge(target)
-		return nil
-	}
-	return err
-}
+func Merge(dst Node, src Node) error { _ = "STUB: not implemented"; return nil }

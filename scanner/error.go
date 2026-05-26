@@ -6,12 +6,6 @@ type InvalidTokenError struct {
 	Token *token.Token
 }
 
-func (e *InvalidTokenError) Error() string {
-	return e.Token.Error
-}
+func (e *InvalidTokenError) Error() string { _ = "STUB: not implemented"; return "" }
 
-func ErrInvalidToken(tk *token.Token) *InvalidTokenError {
-	return &InvalidTokenError{
-		Token: tk,
-	}
-}
+func ErrInvalidToken(tk *token.Token) *InvalidTokenError { _ = "STUB: not implemented"; return nil }

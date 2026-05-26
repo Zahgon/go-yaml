@@ -1,11 +1,6 @@
 // This source inspired by https://github.com/fatih/color.
 package printer
 
-import (
-	"fmt"
-	"strings"
-)
-
 type ColorAttribute int
 
 const (
@@ -57,27 +52,8 @@ var colorResetMap = map[ColorAttribute]ColorAttribute{
 	ColorCrossedOut:   ColorResetCrossedOut,
 }
 
-func format(attrs ...ColorAttribute) string {
-	format := make([]string, 0, len(attrs))
-	for _, attr := range attrs {
-		format = append(format, fmt.Sprint(attr))
-	}
-	return fmt.Sprintf("%s[%sm", escape, strings.Join(format, ";"))
-}
+func format(attrs ...ColorAttribute) string { _ = "STUB: not implemented"; return "" }
 
-func unformat(attrs ...ColorAttribute) string {
-	format := make([]string, len(attrs))
-	for _, attr := range attrs {
-		v := fmt.Sprint(ColorReset)
-		reset, exists := colorResetMap[attr]
-		if exists {
-			v = fmt.Sprint(reset)
-		}
-		format = append(format, v)
-	}
-	return fmt.Sprintf("%s[%sm", escape, strings.Join(format, ";"))
-}
+func unformat(attrs ...ColorAttribute) string { _ = "STUB: not implemented"; return "" }
 
-func colorize(msg string, attrs ...ColorAttribute) string {
-	return format(attrs...) + msg + unformat(attrs...)
-}
+func colorize(msg string, attrs ...ColorAttribute) string { _ = "STUB: not implemented"; return "" }
